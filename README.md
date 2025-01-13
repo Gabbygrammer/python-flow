@@ -28,6 +28,8 @@ Mouse sinistro = trascina il workplace, il nodo o la connessione
 
 Mouse destro su punto di connessione = elimina connessione
 
+Mouse destro su workplace = muovi visuale
+
 Shift + Mouse destro su nodo non attaccato = elimina nodo
 
 N = shortcut aggiungi nodo
