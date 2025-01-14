@@ -239,29 +239,50 @@ class Node:
             entry_window = canvas.create_window(x+entry["x"], y+entry["y"], window=nentry)
             self.items.append(entry_window)
 
-        if node_dict["var-button"] != {}:
-            def show_menu(complete_type, text_input):
-                menu = tk.Menu(canvas.master, tearoff=0)
-                match complete_type:
-                    case "variable":
-                        for variable in declared_variables:
-                            insert_text = variable
-                            if text_input.get().startswith("\"") and text_input.get().endswith("\""):
-                                text_input.insert(0, "f")
-                                insert_text = f"{{{variable}}}"
-                            elif text_input.get().startswith("f\"") and text_input.get().endswith("\""):
-                                insert_text = f"{{{variable}}}"
-                            menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, insert_text))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
+        if node_dict["var-buttons"] != []:
+            for button_dict in node_dict["var-buttons"]:
+                def show_menu(complete_type, text_input):
+                    menu = tk.Menu(canvas.master, tearoff=0)
+                    match complete_type:
+                        case "printvariable":
+                            for variable in declared_variables:
+                                insert_text = variable
+                                if text_input.get().startswith("\"") and text_input.get().endswith("\""):
+                                    text_input.insert(0, "f")
+                                    insert_text = f"{{{variable}}}"
+                                elif text_input.get().startswith("f\"") and text_input.get().endswith("\""):
+                                    insert_text = f"{{{variable}}}"
+                                menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, insert_text))
+                        case "variable":
+                            for variable in declared_variables:
+                                menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, variable))
+                                
+                    menu.post(root.winfo_pointerx(), root.winfo_pointery())
+    
+                inputs = []
+                for item in self.translate_items:
+                    if isinstance(item, tk.Entry):
+                        inputs.append(item)
+    
+                button = tk.Button(canvas.master, text="{x}", font=("Arial", 9), command=lambda complete=button_dict["complete-type"], entry=inputs[button_dict["complete-entry-index"]]: show_menu(complete, entry))
+                button_window = canvas.create_window(x+button_dict["x"], y+button_dict["y"], window=button)
+                self.items.append(button_window)
 
-            inputs = []
-            for item in self.translate_items:
-                if isinstance(item, tk.Entry):
-                    inputs.append(item)
-
-            button = tk.Button(canvas.master, text="{x}", font=("Arial", 9), command=lambda complete=node_dict["var-button"]["complete-type"], entry=inputs[node_dict["var-button"]["complete-entry-index"]]: show_menu(complete, entry))
-            button_window = canvas.create_window(x+node_dict["var-button"]["x"], y+node_dict["var-button"]["y"], window=button)
-            self.items.append(button_window)
+        if type == "if":
+            options = ["==", "!=", ">", "<", ">=", "<=", "è", "non è", "è in", "non è in"]
+            self.if_condition_operator = tk.StringVar(canvas.master)
+            self.if_condition_operator.set(options[0])
+            def set_condition_operator(option):
+                self.if_condition_operator.set(option)
+                button.config(text=option)
+            def show_condition_selection_menu():
+                dropdown_condition_selection = tk.Menu(canvas.master, tearoff=0)
+                for option in options:
+                    dropdown_condition_selection.add_command(label=option, command=lambda option=option: set_condition_operator(option))
+                dropdown_condition_selection.post(root.winfo_pointerx(), root.winfo_pointery())
+            button = tk.Button(canvas.master, text=self.if_condition_operator.get(), command=show_condition_selection_menu)
+            entry_window2 = canvas.create_window(x + width/2 - 30, y + height/2 + 10, window=button)
+            self.items.append(entry_window2)
         
         if type == "start":
             global current_start_node
