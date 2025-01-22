@@ -6,6 +6,14 @@ Puoi tenerlo da parte al programma in parallelo per aiutarti!
 Spero che ti piaccia il programma (e che non compaia qualche bug birichino)!
 Buon divertimento, il creatore Gabriele
 
+Comandi
+Tasto mouse sinistro: trascina nodo / connessione
+Tasto mouse destro: trascina workplace / elimina connessione nodo
+Tasto Shift + mouse destro: elimina nodo senza connessioni
+Tasto mouse centrale: duplica nodo
+Tasto "N": shortcut crea nuovo nodo
+Tasto "C": aggiungi nodo simile a quello puntato dal mouse
+
 I nodi d'inizio e di fine
 Cominciamo dalle basi: vedi quei due nodi, uno bello verde con scritto "Inizio programma" e l'altro rosso con scritto "Fine programma"?
 Sono i due nodi che danno forma ad uno script Python con Python Flow. Senza di essi, non riuscirebbe a tradurre i nodi in codice.
