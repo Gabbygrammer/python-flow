@@ -24,9 +24,9 @@
                 "y": 60,
                 "text": "programma"
             }
-        ],
-        "entries": [],
-        "var-buttons": []
+        ]
+
+
     },
 
     "end": {
@@ -54,9 +54,9 @@
                 "y": 60,
                 "text": "programma" 
             }
-        ],
-        "entries": [],
-        "var-buttons": []
+        ]
+
+
     },
 
     "print": {
@@ -154,8 +154,8 @@
                 "y": 102.5,
                 "type": "value"
             }
-        ],
-        "var-buttons": []
+        ]
+
     },
 
     "variableset": {
@@ -325,9 +325,9 @@
                 "y": 30,
                 "text": "Altrimenti"
             }
-        ],
-        "entries": [],
-        "var-buttons": []
+        ]
+
+
     },
 
     "endif": {
@@ -354,6 +354,707 @@
                 "x": 50,
                 "y": 60,
                 "text": "se"
+            }
+        ]
+
+
+    },
+
+    "def": {
+        "width": 175,
+        "height": 150,
+        "fill-color": "blue",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 65,
+                "x2": 10,
+                "y2": 85,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 165,
+                "y1": 45,
+                "x2": 186,
+                "y2": 65,
+                "type": "definition"
+            },
+            {
+                "x1": 165,
+                "y1": 85,
+                "x2": 185,
+                "y2": 105,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 67.5,
+                "y": 25,
+                "text": "Dichiara"
+            },
+            {
+                "x": 67.5,
+                "y": 45,
+                "text": "funzione"
+            },
+            {
+                "x": 67.5,
+                "y": 95,
+                "text": "con argomenti"
+            },
+            {
+                "x": 142.5,
+                "y": 55,
+                "text": "def"
+            },
+            {
+                "x": 144.5,
+                "y": 95,
+                "text": "dopo"
+            }
+        ],
+        "entries": [
+            {
+                "x": 67.5,
+                "y": 70,
+                "type": "name"
+            },
+            {
+                "x": 67.5,
+                "y": 125,
+                "type": "args"
+            }
+        ]
+
+    },
+
+    "enddef": {
+        "width": 100,
+        "height": 100,
+        "fill-color": "purple",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 40,
+                "x2": 10,
+                "y2": 60,
+                "type": "input"
+            }
+        ],
+        "output-circles": [],
+        "labels": [
+            {
+                "x": 50,
+                "y": 30,
+                "text": "Fine"
+            },
+            {
+                "x": 50,
+                "y": 50,
+                "text": "definizione"
+            },
+            {
+                "x": 50,
+                "y": 70,
+                "text": "funzione"
+            }
+        ]
+
+
+    },
+
+    "return": {
+        "width": 100,
+        "height": 100,
+        "fill-color": "purple",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 40,
+                "x2": 10,
+                "y2": 60,
+                "type": "input"
+            }
+        ],
+        "output-circles": [],
+        "labels": [
+            {
+                "x": 50,
+                "y": 40,
+                "text": "Ritorna"
+            }
+        ]
+
+    },
+
+    "defcall": {
+        "width": 175,
+        "height": 150,
+        "fill-color": "blue",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 65,
+                "x2": 10,
+                "y2": 85,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 165,
+                "y1": 65,
+                "x2": 185,
+                "y2": 85,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 87.5,
+                "y": 25,
+                "text": "Chiama"
+            },
+            {
+                "x": 87.5,
+                "y": 45,
+                "text": "funzione"
+            },
+            {
+                "x": 87.5,
+                "y": 95,
+                "text": "con parametri"
+            }
+        ],
+        "entries": [
+            {
+                "x": 62.5,
+                "y": 70,
+                "type": "name"
+            },
+            {
+                "x": 62.5,
+                "y": 120,
+                "type": "args"
+            }
+        ],
+        "var-buttons": [
+            {
+                "x": 142.5,
+                "y": 70,
+                "complete-entry-index": 0,
+                "complete-type": "function"
+            },
+            {
+                "x": 142.5,
+                "y": 120,
+                "complete-entry-index": 1,
+                "complete-type": "variable"
+            }
+        ]
+    },
+
+    "defcallvar": {
+        "width": 175,
+        "height": 190,
+        "fill-color": "blue",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 85,
+                "x2": 10,
+                "y2": 105,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 165,
+                "y1": 85,
+                "x2": 185,
+                "y2": 105,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 87.5,
+                "y": 20,
+                "text": "Chiama"
+            },
+            {
+                "x": 87.5,
+                "y": 40,
+                "text": "funzione"
+            },
+            {
+                "x": 87.5,
+                "y": 65,
+                "text": "con parametri"
+            },
+            {
+                "x": 87.5,
+                "y": 145,
+                "text": "salvando il risultato in",
+                "font-size": 10
+            }
+        ],
+        "entries": [
+            {
+                "x": 62.5,
+                "y": 65,
+                "type": "name"
+            },
+            {
+                "x": 62.5,
+                "y": 115,
+                "type": "args"
+            },
+            {
+                "x": 62.5,
+                "y": 170,
+                "type": "variable"
+            }
+        ],
+        "var-buttons": [
+            {
+                "x": 142.5,
+                "y": 65,
+                "complete-entry-index": 0,
+                "complete-type": "function"
+            },
+            {
+                "x": 142.5,
+                "y": 115,
+                "complete-entry-index": 1,
+                "complete-type": "variable"
+            },
+            {
+                "x": 142.5,
+                "y": 170,
+                "complete-entry-index": 2,
+                "complete-type": "variable"
+            }
+        ]
+    },
+
+    "listdecl": {
+        "width": 125,
+        "height": 125,
+        "fill-color": "pink",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 52.5,
+                "x2": 10,
+                "y2": 72.5,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 115,
+                "y1": 52.5,
+                "x2": 135,
+                "y2": 72.5,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 62.5,
+                "y": 27.5,
+                "text": "Dichiara"
+            },
+            {
+                "x": 62.5,
+                "y": 47.5,
+                "text": "lista"
+            }
+        ],
+        "entries": [
+            {
+                "x": 62.5,
+                "y": 82.5
+            }
+        ]
+
+    },
+
+    "listset": {
+        "width": 150,
+        "height": 125,
+        "fill-color": "pink",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 52.5,
+                "x2": 10,
+                "y2": 72.5,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 140,
+                "y1": 52.5,
+                "x2": 160,
+                "y2": 72.5,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 75,
+                "y": 72.5,
+                "text": "usando la lista"
+            }
+        ],
+        "entries": [
+            {
+                "x": 75,
+                "y": 52.5,
+                "type": "item"
+            },
+            {
+                "x": 65,
+                "y": 97.5,
+                "type": "list"
+            }
+        ],
+        "var-buttons": [
+            {
+                "x": 130,
+                "y": 97.5,
+                "complete-entry-index": 1,
+                "complete-type": "list"
+            }
+        ]
+    },
+
+    "match": {
+        "width": 175,
+        "height": 125,
+        "fill-color": "cyan",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 52.5,
+                "x2": 10,
+                "y2": 72.5,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 165,
+                "y1": 32.5,
+                "x2": 185,
+                "y2": 52.5,
+                "type": "output"
+            },
+            {
+                "x1": 165,
+                "y1": 72.5,
+                "x2": 185,
+                "y2": 92.5,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 87.5,
+                "y": 22.5,
+                "text": "Esamina variabili"
+            },
+            {
+                "x": 145,
+                "y": 42.5,
+                "text": "casi",
+                "font-size": 10
+            },
+            {
+                "x": 145,
+                "y": 82.5,
+                "text": "dopo",
+                "font-size": 10
+            }
+        ],
+        "entries": [
+            {
+                "x": 82.5,
+                "y": 62.5
+            }
+        ],
+        "var-buttons": [
+            {
+                "x": 87.5,
+                "y": 97.5,
+                "complete-entry-index": 0,
+                "complete-type": "variable"
+            }
+        ]
+    },
+
+    "case": {
+        "width": 125,
+        "height": 125,
+        "fill-color": "cyan",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 52.5,
+                "x2": 10,
+                "y2": 72.5,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 115,
+                "y1": 52.5,
+                "x2": 135,
+                "y2": 72.5,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 62.5,
+                "y": 27.5,
+                "text": "Caso"
+            }
+        ],
+        "entries": [
+            {
+                "x": 62.5,
+                "y": 62.5
+            }
+        ],
+        "var-buttons": [
+            {
+                "x": 62.5,
+                "y": 97.5,
+                "complete-entry-index": 0,
+                "complete-type": "variable"
+            }
+        ]
+    },
+
+    "endmatch": {
+        "width": 100,
+        "height": 100,
+        "fill-color": "cyan",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 40,
+                "x2": 10,
+                "y2": 60,
+                "type": "input"
+            }
+        ],
+        "output-circles": [],
+        "labels": [
+            {
+                "x": 50,
+                "y": 25,
+                "text": "Fine"
+            },
+            {
+                "x": 50,
+                "y": 50,
+                "text": "esamina"
+            },
+            {
+                "x": 50,
+                "y": 75,
+                "text": "variabile"
+            }
+        ]
+    },
+
+    "forlist": {
+        "width": 150,
+        "height": 150,
+        "fill-color": "red",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 65,
+                "x2": 10,
+                "y2": 85,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 140,
+                "y1": 35,
+                "x2": 160,
+                "y2": 55,
+                "type": "for"
+            },
+            {
+                "x1": 140,
+                "y1": 95,
+                "x2": 160,
+                "y2": 115,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 62.5,
+                "y": 20,
+                "text": "Per ogni oggetto",
+                "font-size": 10
+            },
+            {
+                "x": 62.5,
+                "y": 80,
+                "text": "nella lista"
+            },
+            {
+                "x": 125,
+                "y": 45,
+                "text": "loop",
+                "font-size": 10
+            },
+            {
+                "x": 125,
+                "y": 105,
+                "text": "dopo",
+                "font-size": 10
+            }
+        ],
+        "entries": [
+            {
+                "x": 60,
+                "y": 50,
+                "type": "objectname"
+            },
+            {
+                "x": 60,
+                "y": 110,
+                "type": "list"
+            }
+        ],
+        "var-buttons": [
+            {
+                "x": 130,
+                "y": 130,
+                "complete-entry-index": 0,
+                "complete-type": "list"
+            }
+        ]
+    },
+
+    "forrange": {
+        "width": 175,
+        "height": 150,
+        "fill-color": "red",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 65,
+                "x2": 10,
+                "y2": 85,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 165,
+                "y1": 35,
+                "x2": 185,
+                "y2": 55,
+                "type": "for"
+            },
+            {
+                "x1": 165,
+                "y1": 95,
+                "x2": 185,
+                "y2": 115,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 75,
+                "y": 20,
+                "text": "Per ogni numero"
+            },
+            {
+                "x": 75,
+                "y": 65,
+                "text": "in intervallo da"
+            },
+            {
+                "x": 75,
+                "y": 110,
+                "text": "a (escluso)"
+            },
+            {
+                "x": 147,
+                "y": 40,
+                "text": "per",
+                "font-size": 10
+            },
+            {
+                "x": 147,
+                "y": 103,
+                "text": "dopo",
+                "font-size": 10
+            }
+        ],
+        "entries": [
+            {
+                "x": 70,
+                "y": 40,
+                "type": "objectname"
+            },
+            {
+                "x": 70,
+                "y": 90,
+                "type": "rangestart"
+            },
+            {
+                "x": 70,
+                "y": 130,
+                "type": "rangeend"
+            }
+        ],
+        "var-buttons": []
+    },
+
+    "endfor": {
+        "width": 100,
+        "height": 100,
+        "fill-color": "red",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 40,
+                "x2": 10,
+                "y2": 60,
+                "type": "input"
+            }
+        ],
+        "output-circles": [],
+        "labels": [
+            {
+                "x": 50,
+                "y": 40,
+                "text": "Fine"
+            },
+            {
+                "x": 50,
+                "y": 60,
+                "text": "per"
             }
         ],
         "entries": [],
