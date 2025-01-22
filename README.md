@@ -33,3 +33,7 @@ Mouse destro su workplace = muovi visuale
 Shift + Mouse destro su nodo non attaccato = elimina nodo
 
 N = shortcut aggiungi nodo
+
+C = apri menu nodi simili a quello sotto al puntatore
+
+Mouse centrale su nodo = duplica nodo
