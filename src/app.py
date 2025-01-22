@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import time
+import json
 
 from translator import flow_to_code
 from translation import TranslationException
@@ -200,202 +201,85 @@ class Node:
         self.input_circles_number = 0 # il numero di cerchi di input del nodo
         self.output_circles_number = 0 # il numero di cerchi di output del nodo
 
-        width = 100
-        height = 100
+        node_dict = json.load(open("nodes.json", "r"))[type]
 
-        if type == "variabledecl" or type == "return" or type == "listdecl" or type == "case":
-            width = 125
-            height = 125
-        elif type == "variableset" or type == "listset":
-            width = 150
-            height = 125
-        elif type == "match":
-            width = 175
-            height = 125
-        elif type == "def" or type == "defcall":
-            width = 175
-            height = 150
-        elif type == "defcallvar":
-            width = 175
-            height = 190
-        elif type == "if":
-            width = 200
-            height = 150
-        if type == "start": # TODO: aggiungere nodi input (la funzione) e per scrivere/leggere file (prima direi i match-case, for e while)
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='lightgreen')
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 -10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "start"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 0
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 10, text="Inizio", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 + 10, text="programma", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            global current_start_node
-            current_start_node = self
-        elif type == "end":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='red')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "end"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 0
-            label = canvas.create_text(x + width/2, y + height/2 - 10, text="Fine", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 + 10, text="programma", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            global current_end_node
-            current_end_node = self
-        elif type == "print":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='orange')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 -10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2, text="Stampa", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2, y + height/2 - 25, window=text_input)
-            self.items.append(entry_window)
-            button_x = x + width/2
-            button_y = y + height/2 + 30
-            def show_menu():
-                menu = tk.Menu(canvas.master, tearoff=0)
-                for variable in declared_variables:
-                    insert_text = variable
-                    if text_input.get().startswith("\"") and text_input.get().endswith("\""):
-                        text_input.insert(0, "f")
-                        insert_text = f"{{{variable}}}"
-                    elif text_input.get().startswith("f\"") and text_input.get().endswith("\""):
-                        insert_text = f"{{{variable}}}"
-                    menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, insert_text))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text="{x}", command=show_menu, font=("Arial", 9))
-            entry_window2 = canvas.create_window(button_x, button_y, window=button)
-            self.items.append(entry_window2)
-        elif type == "variabledecl":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='yellow')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 40, text="Dichiara", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 - 20, text="variabile", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            
-            text_input.type = "name"
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2, y + height/2, window=text_input)
-            self.items.append(entry_window)
-            label3 = canvas.create_text(x + width/2, y + height/2 + 20, text="=", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input2.type = "value"
-            self.translate_items.append(text_input2)
-            entry_window2 = canvas.create_window(x + width/2, y + height/2 + 40, window=text_input2)
-            self.items.append(entry_window2)
-        elif type == "variableset":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='yellow')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 40, text="Imposta", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 - 20, text="variabile", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
+        width = node_dict["width"]
+        height = node_dict["height"]
 
-            
-            text_input.type = "name"
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2 - 15, y + height/2, window=text_input)
-            self.items.append(entry_window)
-            label3 = canvas.create_text(x + width/2 - 15, y + height/2 + 20, text="=", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input2.type = "value"
-            self.translate_items.append(text_input2)
-            entry_window2 = canvas.create_window(x + width/2 - 15, y + height/2 + 40, window=text_input2)
-            self.items.append(entry_window2)
-            button_x = x + width/2 + 45
-            button_y = y + height/2
-            def show_menu(input: int):
-                menu = tk.Menu(canvas.master, tearoff=0)
-                for variable in declared_variables:
-                    if input == 1:
-                        menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, variable))
-                    elif input == 2:
-                        menu.add_command(label=variable, command=lambda: text_input2.insert(tk.INSERT, variable))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(1), font=("Arial", 9))
-            entry_window3 = canvas.create_window(button_x, button_y, window=button)
-            self.items.append(entry_window3)
-            button2 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(2), font=("Arial", 9))
-            entry_window4 = canvas.create_window(button_x, button_y + 40, window=button2)
-            self.items.append(entry_window4)
-        elif type == "if":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='green')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
+        self.box = canvas.create_rectangle(x, y, x+width, y+height, fill=node_dict["fill-color"])
+
+        for circle in node_dict["input-circles"]:
+            icircle = canvas.create_oval(x+circle["x1"], y+circle["y1"], x+circle["x2"], y+circle["y2"], fill="red")
             self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
+            self.circle_types[icircle] = circle["type"]
             self.circle_io_types[icircle] = "input"
             self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 30, x + width + 10, y + height/2 - 10, fill='red')
+
+        self.input_circles_number = len(node_dict["input-circles"])
+
+        for circle in node_dict["output-circles"]:
+            ocircle = canvas.create_oval(x+circle["x1"], y+circle["y1"], x+circle["x2"], y+circle["y2"], fill="red")
             self.circles.append(ocircle)
-            self.circle_types[ocircle] = "conditional"
+            self.circle_types[ocircle] = circle["type"]
             self.circle_io_types[ocircle] = "output"
             self.circles_is_connected[ocircle] = False
-            ocircle2 = canvas.create_oval(x + width - 10, y + height/2 + 10, x + width + 10, y + height/2 + 30, fill='red')
-            self.circles.append(ocircle2)
-            self.circle_types[ocircle2] = "output"
-            self.circle_io_types[ocircle2] = "output"
-            self.circles_is_connected[ocircle2] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 2
-            label = canvas.create_text(x + width/2 - 30, y + height/2 - 50, text="Se", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width - 30, y + height/2 - 20, text="vero", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            label3 = canvas.create_text(x + width - 30, y + height/2 + 20, text="dopo", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2 - 30, y + height/2 - 20, window=text_input)
-            self.items.append(entry_window)
+
+        self.output_circles_number = len(node_dict["output-circles"])
+
+        for label in node_dict["labels"]:
+            font = ("Arial", 12, "bold")
+            if "font-size" in label.keys():
+                font = ("Arial", label["font-size"], "bold")
+            nlabel = canvas.create_text(x+label["x"], y+label["y"], text=label["text"], font=font, anchor="center")
+            self.items.append(nlabel)
+
+        if "entries" in node_dict.keys():
+            for entry in node_dict["entries"]:
+                nentry = tk.Entry(canvas.master, width=10, font=("Arial", 12))
+                if "type" in entry.keys():
+                    nentry.type = entry["type"]
+                self.translate_items.append(nentry)
+    
+                entry_window = canvas.create_window(x+entry["x"], y+entry["y"], window=nentry)
+                self.items.append(entry_window)
+
+        if "var-buttons" in node_dict.keys():
+            if node_dict["var-buttons"] != []:
+                for button_dict in node_dict["var-buttons"]:
+                    def show_menu(complete_type, text_input):
+                        menu = tk.Menu(canvas.master, tearoff=0)
+                        match complete_type:
+                            case "printvariable":
+                                for variable in declared_variables:
+                                    insert_text = variable
+                                    if text_input.get().startswith("\"") and text_input.get().endswith("\""):
+                                        text_input.insert(0, "f")
+                                        insert_text = f"{{{variable}}}"
+                                    elif text_input.get().startswith("f\"") and text_input.get().endswith("\""):
+                                        insert_text = f"{{{variable}}}"
+                                    menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, insert_text))
+                            case "variable":
+                                for variable in declared_variables:
+                                    menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, variable))
+                            case "function":
+                                for function in declared_functions:
+                                    menu.add_command(label=function, command=lambda: text_input.insert(tk.INSERT, function))
+                            case "list":
+                                for list in declared_lists:
+                                    menu.add_command(label=list, command=lambda: text_input.insert(tk.INSERT, list))
+                                    
+                        menu.post(root.winfo_pointerx(), root.winfo_pointery())
+        
+                    inputs = []
+                    for item in self.translate_items:
+                        if isinstance(item, tk.Entry):
+                            inputs.append(item)
+        
+                    button = tk.Button(canvas.master, text="{x}", font=("Arial", 9), command=lambda complete=button_dict["complete-type"], entry=inputs[button_dict["complete-entry-index"]]: show_menu(complete, entry))
+                    button_window = canvas.create_window(x+button_dict["x"], y+button_dict["y"], window=button)
+                    self.items.append(button_window)
+
+        if type == "if":
             options = ["==", "!=", ">", "<", ">=", "<=", "è", "non è", "è in", "non è in"]
             self.if_condition_operator = tk.StringVar(canvas.master)
             self.if_condition_operator.set(options[0])
@@ -410,408 +294,30 @@ class Node:
             button = tk.Button(canvas.master, text=self.if_condition_operator.get(), command=show_condition_selection_menu)
             entry_window2 = canvas.create_window(x + width/2 - 30, y + height/2 + 10, window=button)
             self.items.append(entry_window2)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            self.translate_items.append(text_input2)
-            entry_window3 = canvas.create_window(x + width/2 - 30, y + height/2 + 45, window=text_input2)
-            self.items.append(entry_window3)
-            button_x = x + width/2 + 35
-            button_y = y + height/2 - 20
-            def show_menu(input: int):
-                menu = tk.Menu(canvas.master, tearoff=0)
-                for variable in declared_variables:
-                    if input == 1:
-                        menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, variable))
-                    elif input == 2:
-                        menu.add_command(label=variable, command=lambda: text_input2.insert(tk.INSERT, variable))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button2 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(1), font=("Arial", 9))
-            entry_window4 = canvas.create_window(button_x, button_y, window=button2)
-            self.items.append(entry_window4)
-            button3 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(2), font=("Arial", 9))
-            entry_window5 = canvas.create_window(button_x, button_y + 65, window=button3)
-            self.items.append(entry_window5)
-        elif type == "else":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='green')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2- 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 20, text="Altrimenti", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-        elif type == "endif":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='green')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 0
-            label = canvas.create_text(x + width/2, y + height/2 - 10, text="Fine", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 + 10, text="se", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-        elif type == "def":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='blue')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 30, x + width + 10, y + height/2 - 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "definition"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            ocircle2 = canvas.create_oval(x + width - 10, y + height/2 + 10, x + width + 10, y + height/2 + 30, fill='red')
-            self.circles.append(ocircle2)
-            self.circle_types[ocircle2] = "output"
-            self.circle_io_types[ocircle2] = "output"
-            self.circles_is_connected[ocircle2] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 2
-            label = canvas.create_text(x + width/2 - 20, y + height/2 - 50, text="Dichiara", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2 - 20, y + height/2 - 30, text="funzione", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input.type = "name"
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2 - 20, y + height/2 - 5, window=text_input)
-            self.items.append(entry_window)
-            label3 = canvas.create_text(x + width/2 - 20, y + height/2 + 20, text="con argomenti", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-            label4 = canvas.create_text(x + width/2 + 55, y + height/2 + - 20, text="def", font=("Arial", 11, "bold"), anchor="center")
-            self.items.append(label4)
-            label5 = canvas.create_text(x + width/2 + 57, y + height/2 + 20, text="dopo", font=("Arial", 11, "bold"), anchor="center")
-            self.items.append(label5)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input2.type = "args"
-            text_input2.id = len(self.translate_items)
-            
-            self.translate_items.append(text_input2)
-            entry_window2 = canvas.create_window(x + width/2 - 20, y + height/2 + 50, window=text_input2)
-            self.items.append(entry_window2)
-        elif type == "enddef":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='purple')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 0
-            label = canvas.create_text(x + width/2, y + height/2 - 20, text="Fine", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2, text="definizione", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            label3 = canvas.create_text(x + width/2, y + height/2 + 20, text="funzione", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-        elif type == "return":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='purple')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 0
-            label = canvas.create_text(x + width/2, y + height/2 - 10, text="Ritorna", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
 
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2, y + height/2 + 20, window=text_input)
-            self.items.append(entry_window)
-        elif type == "defcall":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='blue')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 50, text="Chiama", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 - 30, text="funzione", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input.type = "name"
-
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2 - 25, y + height/2 - 5, window=text_input)
-            self.items.append(entry_window)
-            label3 = canvas.create_text(x + width/2, y + height/2 + 20, text="con argomenti", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input2.type = "args"
-            text_input2.id = len(self.translate_items)
-            
-            self.translate_items.append(text_input2)
-            entry_window2 = canvas.create_window(x + width/2 - 25, y + height/2 + 45, window=text_input2)
-            self.items.append(entry_window2)
-            button_x = x + width/2 + 55
-            button_y = y + height/2 - 5
-            def show_menu(input: int):
-                menu = tk.Menu(canvas.master, tearoff=0)
-                if input == 1:
-                    for function in declared_functions:
-                        menu.add_command(label=function, command=lambda: text_input.insert(tk.INSERT, function))
-                elif input == 2:
-                    for variable in declared_variables:
-                        menu.add_command(label=variable, command=lambda: text_input2.insert(tk.INSERT, variable))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text="{{f}}", command=lambda: show_menu(1), font=("Arial", 9))
-            entry_window3 = canvas.create_window(button_x, button_y, window=button)
-            self.items.append(entry_window3)
-            button2 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(2), font=("Arial", 9))
-            entry_window4 = canvas.create_window(button_x, button_y + 50, window=button2)
-            self.items.append(entry_window4)
-        elif type == "defcallvar":
-            self.box = canvas.create_rectangle(x, y, x+width, y+height, fill='blue')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 75, text="Chiama", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 - 55, text="funzione", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input.type = "name"
-
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2 - 25, y + height/2 - 30, window=text_input)
-            self.items.append(entry_window)
-            label3 = canvas.create_text(x + width/2, y + height/2 - 5, text="con argomenti", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input2.type = "args"
-            text_input2.id = len(self.translate_items)
-            
-            self.translate_items.append(text_input2)
-            entry_window2 = canvas.create_window(x + width/2 - 25, y + height/2 + 20, window=text_input2)
-            self.items.append(entry_window2)
-            button_x = x + width/2 + 55
-            button_y = y + height/2 - 30
-            def show_menu(input: int):
-                menu = tk.Menu(canvas.master, tearoff=0)
-                if input == 1:
-                    for function in declared_functions:
-                        menu.add_command(label=function, command=lambda: text_input.insert(tk.INSERT, function))
-                elif input == 2:
-                    for variable in declared_variables:
-                        menu.add_command(label=variable, command=lambda var=variable: text_input2.insert(tk.INSERT, var))
-                elif input == 3:
-                    for variable in declared_variables:
-                        menu.add_command(label=variable, command=lambda var=variable: text_input3.insert(tk.INSERT, var))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text="{{f}}", command=lambda: show_menu(1), font=("Arial", 9))
-            entry_window3 = canvas.create_window(button_x, button_y, window=button)
-            self.items.append(entry_window3)
-            button2 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(2), font=("Arial", 9))
-            entry_window4 = canvas.create_window(button_x, button_y + 50, window=button2)
-            self.items.append(entry_window4)
-            label4 = canvas.create_text(x + width/2, y + height/2 + 50, text="salvando il risultato in", font=("Arial", 10, "bold"), anchor="center")
-            self.items.append(label4)
-            text_input3 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input3.type = "variable"
-            text_input3.id = len(self.translate_items)
-            
-            self.translate_items.append(text_input3)
-            entry_window5 = canvas.create_window(x + width/2 - 25, y + height/2 + 75, window=text_input3)
-            self.items.append(entry_window5)
-            button3 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(3), font=("Arial", 9))
-            entry_window6 = canvas.create_window(button_x, button_y + 105, window=button3)
-            self.items.append(entry_window6)
-        elif type == "listdecl":
-            self.box = canvas.create_rectangle(x, y, x + width, y + height, fill='pink')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 35, text="Dichiara", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2 - 15, text="lista", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2, y + height/2 + 20, window=text_input)
-            self.items.append(entry_window)
-        elif type == "listset":
-            self.box = canvas.create_rectangle(x, y, x + width, y + height, fill='pink')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
+        if type == "listset":
             actions = ["Aggiungi", "Rimuovi"]
             self.list_action = tk.StringVar(value=actions[0])
-            def show_menu(input: int):
+
+            def show_action_menu():
                 menu = tk.Menu(canvas.master, tearoff=0)
-                if input == 1:
-                    for action in actions:
-                        def set_list_action(action=action):
-                            self.list_action.set(action)
-                            button.config(text=self.list_action.get())
-                        menu.add_command(label=action, command=set_list_action)
-                elif input == 2:
-                    for list in declared_lists:
-                        menu.add_command(label=list, command=lambda list=list: text_input2.insert(tk.INSERT, list))
+                for action in actions:
+                    def set_list_action(action=action):
+                        self.list_action.set(action)
+                        button.config(text=self.list_action.get())
+                    menu.add_command(label=action, command=set_list_action)
                 menu.post(root.winfo_pointerx(), root.winfo_pointery())
 
-            button = tk.Button(canvas.master, text=self.list_action.get(), command=lambda: show_menu(1))
+            button = tk.Button(canvas.master, text=self.list_action.get(), command=show_action_menu)
             entry_window = canvas.create_window(x + width/2, y + height/2 - 40, window=button)
             self.items.append(entry_window)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input.type = "item"
-
-            
-            self.translate_items.append(text_input)
-            entry_window2 = canvas.create_window(x + width/2, y + height/2 - 10, window=text_input)
-            self.items.append(entry_window2)
-            label = canvas.create_text(x + width/2, y + height/2 + 10, text="usando la lista", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            text_input2 = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-            text_input2.type = "list"
-            text_input2.id = len(self.translate_items)
-            
-            self.translate_items.append(text_input2)
-            entry_window3 = canvas.create_window(x + width/2 - 10, y + height/2 + 35, window=text_input2)
-            self.items.append(entry_window3)
-            button2 = tk.Button(canvas.master, text="{x}", command=lambda: show_menu(2))
-            entry_window4 = canvas.create_window(x + width/2 + 55, y + height/2 + 35, window=button2)
-            self.items.append(entry_window4)
-        elif type == "match":
-            self.box = canvas.create_rectangle(x, y, x + width, y + height, fill='cyan')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 30, x + width + 10, y + height/2 - 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            ocircle2 = canvas.create_oval(x + width - 10, y + height/2 + 10, x + width + 10, y + height/2 + 30, fill='red')
-            self.circles.append(ocircle2)
-            self.circle_types[ocircle2] = "output"
-            self.circle_io_types[ocircle2] = "output"
-            self.circles_is_connected[ocircle2] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 2
-            label = canvas.create_text(x + width/2, y + height/2 - 40, text="Esamina variabile", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width - 30, y + height/2 - 20, text="casi", font=("Arial", 10, "bold"), anchor="center")
-            self.items.append(label2)
-            label3 = canvas.create_text(x + width - 30, y + height/2 + 20, text="dopo", font=("Arial", 10, "bold"), anchor="center")
-            self.items.append(label3)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2 - 5, y + height/2, window=text_input)
-            self.items.append(entry_window)
-            button_x = x + width/2
-            button_y = y + height/2 + 35
-            def show_menu():
-                menu = tk.Menu(canvas.master, tearoff=0)
-                for variable in declared_variables:
-                    menu.add_command(label=variable, command=lambda var=variable: text_input.insert(tk.INSERT, var))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text="{x}", command=show_menu, font=("Arial", 9))
-            entry_window2 = canvas.create_window(button_x, button_y, window=button)
-            self.items.append(entry_window2)
-        elif type == "case":
-            self.box = canvas.create_rectangle(x, y, x + width, y + height, fill='cyan')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            ocircle = canvas.create_oval(x + width - 10, y + height/2 - 10, x + width + 10, y + height/2 + 10, fill='red')
-            self.circles.append(ocircle)
-            self.circle_types[ocircle] = "output"
-            self.circle_io_types[ocircle] = "output"
-            self.circles_is_connected[ocircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 1
-            label = canvas.create_text(x + width/2, y + height/2 - 35, text="Caso", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            text_input = tk.Entry(canvas.master, font=("Arial", 12), width=10)
-
-            
-            self.translate_items.append(text_input)
-            entry_window = canvas.create_window(x + width/2, y + height/2, window=text_input)
-            self.items.append(entry_window)
-            button_x = x + width/2
-            button_y = y + height/2 + 35
-            def show_menu():
-                menu = tk.Menu(canvas.master, tearoff=0)
-                for variable in declared_variables:
-                    menu.add_command(label=variable, command=lambda var=variable: text_input.insert(tk.INSERT, var))
-                menu.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text="{x}", command=show_menu, font=("Arial", 9))
-            entry_window2 = canvas.create_window(button_x, button_y, window=button)
-            self.items.append(entry_window2)
-        elif type == "endmatch":
-            self.box = canvas.create_rectangle(x, y, x + width, y + height, fill='cyan')
-            icircle = canvas.create_oval(x - 10, y + height/2 - 10, x + 10, y + height/2 + 10, fill='red')
-            self.circles.append(icircle)
-            self.circle_types[icircle] = "input"
-            self.circle_io_types[icircle] = "input"
-            self.circles_is_connected[icircle] = False
-            self.input_circles_number = 1
-            self.output_circles_number = 0
-            label = canvas.create_text(x + width/2, y + height/2 - 25, text="Fine", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label)
-            label2 = canvas.create_text(x + width/2, y + height/2, text="esamina", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label2)
-            label3 = canvas.create_text(x + width/2, y + height/2 + 25, text="variabile", font=("Arial", 12, "bold"), anchor="center")
-            self.items.append(label3)
+        
+        if type == "start":
+            global current_start_node
+            current_start_node = self
+        elif type == "end":
+            global current_end_node
+            current_end_node = self
 
         canvas.tag_bind(self.box, '<Button-1>', self.start_drag)
         canvas.tag_bind(self.box, '<B1-Motion>', self.drag)
@@ -1217,11 +723,12 @@ for option in translation_options:
 translate_button = tk.Button(root, text="Traduci codice", command=lambda: translation_option_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
 translate_button.place(x=10, y=60)
 
-node_options_submenus = ["Generali", "Variabili", "Condizionali", "Funzioni"]
+node_options_submenus = ["Generali", "Variabili", "Condizionali", "Funzioni", "Loop"]
 node_options_submenus_dict = {"Generali": ["Stampa"],
                               "Variabili": ["Dichiara variabile", "Imposta variabile", "Dichiara lista", "Modifica lista"],
                               "Condizionali": ["Se", "Altrimenti", "Fine se", "Esamina variabile", "Caso variabile", "Fine esamina variabile"],
-                              "Funzioni": ["Dichiara funzione", "Chiama funzione (senza ritorno)", "Chiama funzione (variabile)", "Fine funzione", "Ritorna"]}
+                              "Funzioni": ["Dichiara funzione", "Chiama funzione (senza ritorno)", "Chiama funzione (variabile)", "Fine funzione", "Ritorna"],
+                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per"]}
 node_options_dict = {"Stampa": "print",
                      "Dichiara variabile": "variabledecl",
                      "Imposta variabile": "variableset",
@@ -1237,7 +744,10 @@ node_options_dict = {"Stampa": "print",
                      "Chiama funzione (senza ritorno)": "defcall",
                      "Chiama funzione (variabile)": "defcallvar",
                      "Fine funzione": "enddef",
-                     "Ritorna": "return"}
+                     "Ritorna": "return",
+                     "Per ogni oggetto in lista": "forlist",
+                     "Per ogni numero in intervallo": "forrange",
+                     "Fine per": "endfor"}
 selected_node = tk.StringVar()
 def set_selected_node(option):
     selected_node.set(option)
@@ -1269,8 +779,8 @@ dropdown_node_selection.bind("<Up>", navigate_node_selection_menu)
 dropdown_node_selection.bind("<Return>", navigate_node_selection_menu)
 
 def duplicate_node(event):
-    x = event.x + canvas.canvasx(0)
-    y = event.y + canvas.canvasy(0)
+    x = event.x
+    y = event.y
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
@@ -1285,8 +795,8 @@ def duplicate_node(event):
 canvas.bind('<Button-2>', duplicate_node)
 
 def add_node_dropdown():
-    x = canvas.canvasx(0) + root.winfo_width() / 2
-    y = canvas.canvasy(0) + root.winfo_height() / 2
+    x = root.winfo_pointerx() - canvas.winfo_rootx()
+    y = root.winfo_pointery() - canvas.winfo_rooty()
     node_to_create = node_options_dict[selected_node.get()]
     new_node = Node(x, y, node_to_create)
     nodes.append(new_node)
@@ -1318,20 +828,22 @@ node_to_similar_options_dict = {"print": ["print"],
                                 "defcall": ["def", "defcall", "defcallvar", "enddef", "return"],
                                 "defcallvar": ["def", "defcall", "defcallvar", "enddef", "return"],
                                 "enddef": ["def", "defcall", "defcallvar", "enddef", "return"],
-                                "return": ["def", "defcall", "defcallvar", "enddef", "return"]}
+                                "return": ["def", "defcall", "defcallvar", "enddef", "return"],
+                                "forlist": ["forlist", "endfor"],
+                                "endfor": ["forlist", "endfor"]}
 
 similar_nodes_menu = tk.Menu(root, tearoff=0)
 def update_similar_nodes_menu(event):
     similar_nodes_menu.delete(0, tk.END)
-    x = event.x + canvas.canvasx(0)
-    y = event.y + canvas.canvasy(0)
+    x = event.x
+    y = event.y
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
-        if item is None:
-            continue
-        if nodes_parent_classes[item].type == "start" or nodes_parent_classes[item].type == "end":
-            continue
         if canvas.type(item) == "rectangle":
+            if item is None:
+                continue
+            if nodes_parent_classes[item].type == "start" or nodes_parent_classes[item].type == "end":
+                continue
             node = nodes_parent_classes[item]
             for option in node_to_similar_options_dict[node.type]:
                 for option2 in node_options_dict.keys():
