@@ -34,6 +34,7 @@ def sort_connections(node_connections: list):
     opened_ifs = []
     opened_defs = []
     opened_matches = []
+    opened_fors = []
     for _ in range(connections_number):
         other_node = ordered_node_connections[len(ordered_node_connections) - 1]
         if other_node.type == "if":
@@ -77,6 +78,20 @@ def sort_connections(node_connections: list):
                     ordered_node_connections.append(connection[0])
                     node_connections.remove(connection)
                     opened_matches.pop(len(opened_matches) - 1)
+                    break
+        elif other_node.type == "forlist" or other_node.type == "forrange":
+            opened_fors.append(other_node)
+        elif other_node.type == "endfor" and len(opened_fors) > 0:
+            for connection in node_connections:
+                if connection[0] == opened_fors[len(opened_fors) - 1]:
+                    ordered_node_connections.append(connection[1])
+                    node_connections.remove(connection)
+                    opened_fors.pop(len(opened_fors) - 1)
+                    break
+                elif connection[1] == opened_fors[len(opened_fors) - 1]:
+                    ordered_node_connections.append(connection[0])
+                    node_connections.remove(connection)
+                    opened_fors.pop(len(opened_fors) - 1)
                     break
 
         for connection in node_connections:
@@ -418,6 +433,55 @@ def translate_to_code():
             case "endmatch":
                 if last_node.type == "match":
                     raise TranslationException("Nodo di tipo \"match\" senza contenuto", last_node)
+                indentation_level -= 1
+
+            case "forlist":
+                try:
+                    item_name = ""
+                    list_name = ""
+                    
+                    for item in node.translate_items:
+                        if item.type == "objectname":
+                            item_name = item.get()
+                        elif item.type == "list":
+                            list_name = item.get()
+                            if list_name in declared_lists:
+                                code += f"{"    " * indentation_level}for {item_name} in {list_name}:\n"
+                                indentation_level += 1
+                            else:
+                                raise TranslationException(f"Lista non dichiarata: \"{list_name}\"", node)
+                except:
+                    pass
+
+            case "forrange":
+                try:
+                    item_name = ""
+                    start = 0
+                    end = 0
+                    
+                    for item in node.translate_items:
+                        if item.type == "objectname":
+                            item_name = item.get()
+                        elif item.type == "rangestart":
+                            start = item.get()
+                            try:
+                                int(start)
+                            except:
+                                raise TranslationException("Valore di inizio non valido", node)
+                        elif item.type == "rangeend":
+                            end = item.get()
+                            try:
+                                int(end)
+                            except:
+                                raise TranslationException("Valore di fine non valido", node)
+                    code += f"{"    " * indentation_level}for {item_name} in range({start}, {end}):\n"
+                    indentation_level += 1
+                except:
+                    pass
+
+            case "endfor":
+                if last_node.type == "forlist":
+                    raise TranslationException("Nodo di tipo \"forlist\" senza contenuto", last_node)
                 indentation_level -= 1
 
         last_node = node
