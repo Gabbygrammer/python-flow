@@ -5,104 +5,82 @@ from translation import TranslationException
 ordered_node_connections = []
 connections_number = 0
 
-def flow_to_code(node_connections: list):
+def initialize(node_connections: list):
     global connections_number, ordered_node_connections
     ordered_node_connections = []
     connections_number = len(node_connections) - 1
     for connection in node_connections:
-        start_found = False
         if connection[0].type == "start":
             ordered_node_connections.append(connection[0])
             ordered_node_connections.append(connection[1])
             node_connections.remove(connection)
-            start_found = True
+            return True
         elif connection[1].type == "start":
             ordered_node_connections.append(connection[1])
             ordered_node_connections.append(connection[0])
             node_connections.remove(connection)
-            start_found = True
-        if start_found:
-            sort_connections(node_connections)
-            print_result()
-            try:
-                code = translate_to_code()
-                return code
-            except TranslationException as e:
-                raise e
+            return True
+    return False
 
-def sort_connections(node_connections: list):
-    opened_ifs = []
-    opened_defs = []
-    opened_matches = []
-    opened_fors = []
+def flow_to_code(node_connections: list, nodes: list):
+    if initialize(node_connections):
+        sort_connections(node_connections, nodes)
+        print_result()
+        try:
+            code = translate_to_code()
+            return code
+        except TranslationException as e:
+            raise e
+
+def sort_connections(node_connections: list, nodes: list): # TODO: finish this once and for all
+    is_first_path_connected = {} # contains whether the first path of the node was sorted or not (if the node has more than 1 output)
+    opened_nodes = []
+    for node in nodes:
+        if node.output_circles_number > 1:
+            is_first_path_connected[node] = False
     for _ in range(connections_number):
         other_node = ordered_node_connections[len(ordered_node_connections) - 1]
-        if other_node.type == "if":
-            opened_ifs.append(other_node)
-        elif other_node.type == "endif" and len(opened_ifs) > 0:
-            for connection in node_connections:
-                if connection[0] == opened_ifs[len(opened_ifs) - 1]:
-                    ordered_node_connections.append(connection[1])
-                    node_connections.remove(connection)
-                    opened_ifs.pop(len(opened_ifs) - 1)
-                    break
-                elif connection[1] == opened_ifs[len(opened_ifs) - 1]:
-                    ordered_node_connections.append(connection[0])
-                    node_connections.remove(connection)
-                    opened_ifs.pop(len(opened_ifs) - 1)
-                    break
-        elif other_node.type == "def":
-            opened_defs.append(other_node)
-        elif other_node.type == "enddef" or other_node.type == "return" and len(opened_defs) > 0:
-            for connection in node_connections:
-                if connection[0] == opened_defs[len(opened_defs) - 1]:
-                    ordered_node_connections.append(connection[1])
-                    node_connections.remove(connection)
-                    opened_defs.pop(len(opened_defs) - 1)
-                    break
-                elif connection[1] == opened_defs[len(opened_defs) - 1]:
-                    ordered_node_connections.append(connection[0])
-                    node_connections.remove(connection)
-                    opened_defs.pop(len(opened_defs) - 1)
-                    break
-        elif other_node.type == "match":
-            opened_matches.append(other_node)
-        elif other_node.type == "endmatch" and len(opened_matches) > 0:
-            for connection in node_connections:
-                if connection[0] == opened_matches[len(opened_matches) - 1]:
-                    ordered_node_connections.append(connection[1])
-                    node_connections.remove(connection)
-                    opened_matches.pop(len(opened_matches) - 1)
-                    break
-                elif connection[1] == opened_matches[len(opened_matches) - 1]:
-                    ordered_node_connections.append(connection[0])
-                    node_connections.remove(connection)
-                    opened_matches.pop(len(opened_matches) - 1)
-                    break
-        elif other_node.type == "forlist" or other_node.type == "forrange":
-            opened_fors.append(other_node)
-        elif other_node.type == "endfor" and len(opened_fors) > 0:
-            for connection in node_connections:
-                if connection[0] == opened_fors[len(opened_fors) - 1]:
-                    ordered_node_connections.append(connection[1])
-                    node_connections.remove(connection)
-                    opened_fors.pop(len(opened_fors) - 1)
-                    break
-                elif connection[1] == opened_fors[len(opened_fors) - 1]:
-                    ordered_node_connections.append(connection[0])
-                    node_connections.remove(connection)
-                    opened_fors.pop(len(opened_fors) - 1)
-                    break
-
+        if other_node.type in ["if", "def", "match", "forrange", "forlist"]:
+            opened_nodes.append(other_node)
         for connection in node_connections:
-            if connection[0] == other_node:
-                ordered_node_connections.append(connection[1])
+            second_node = connection[1] if other_node == connection[0] else None
+            if other_node.type in ["endif", "enddef", "endmatch", "endforrange", "endforlist", "return"]:
+                opened_node = opened_nodes[len(opened_nodes) - 1]
+                second_node = connection[1] if opened_node == connection[0] else None
+                if second_node is None:
+                    continue
+                found = False
+                for circle in opened_node.circles:
+                    if is_first_path_connected[opened_node]:
+                        if opened_node.circle_io_types[circle] == "output" and opened_node.circle_types[circle] == "2":
+                            if opened_node.circle_connections[circle] in second_node.circles:
+                                ordered_node_connections.append(second_node)
+                                found = True
+                                break
+                if found:
+                    opened_nodes.remove(opened_node)
+                    break
+                else:
+                    continue
+
+            if second_node is None:
+                continue
+            if other_node.output_circles_number <= 1:
+                ordered_node_connections.append(second_node)
                 node_connections.remove(connection)
                 break
-            elif connection[1] == other_node:
-                ordered_node_connections.append(connection[0])
-                node_connections.remove(connection)
-                break
+            else:
+                found = False
+                for circle in other_node.circles:
+                    if not is_first_path_connected[other_node]:
+                        if other_node.circle_io_types[circle] == "output" and other_node.circle_types[circle] == "1":
+                            if other_node.circle_connections[circle] in second_node.circles:
+                                ordered_node_connections.append(second_node)
+                                is_first_path_connected[other_node] = True
+                                found = True
+                                break
+                if found:
+                    break
 
 def print_result():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -322,7 +300,8 @@ def translate_to_code():
                         elif item.type == "args":
                             args = item.get()
                             if validate_string(args):
-                                for arg in args.split(",").replace(" ", ""):
+                                for arg in args.split(","):
+                                    arg = arg.strip()
                                     if not "\"" and not "'" in arg:
                                         if not arg in declared_vars:
                                             raise TranslationException(f"Variabile \"{arg}\" non dichiarata", node)
@@ -384,7 +363,11 @@ def translate_to_code():
                                 list_name = list
                             else:
                                 raise TranslationException(f"Lista non dichiarata: \"{list}\"", node)
-                    code += f"{"    " * indentation_level}{list_name}.{action}({item_name})\n"
+                    items = item_name.split(";")
+                    if len(items) > 1:
+                        code += f"{"    " * indentation_level}for item in {"[" + ''.join(items) + "]"}:\n{"    " * indentation_level}    {list_name}.{action}(item)\n"
+                    else:
+                        code += f"{"    " * indentation_level}{list_name}.{action}({item_name})\n"
                 except:
                     pass
 
@@ -479,9 +462,14 @@ def translate_to_code():
                 except:
                     pass
 
-            case "endfor":
+            case "endforlist":
                 if last_node.type == "forlist":
                     raise TranslationException("Nodo di tipo \"forlist\" senza contenuto", last_node)
+                indentation_level -= 1
+
+            case "endforrange":
+                if last_node.type == "forrange":
+                    raise TranslationException("Nodo di tipo \"forrange\" senza contenuto", last_node)
                 indentation_level -= 1
 
         last_node = node
