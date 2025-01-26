@@ -21,6 +21,7 @@ root.title("Python Flow - Editor flowchart per Python")
 canvas = tk.Canvas(root, width=1, height=1)
 canvas.configure(bg="gray")
 canvas.pack(fill=tk.BOTH, expand=True)
+canvas_origin = [0, 0]
 
 node_connections = [] # una lista di coppie di nodi connessi
 node_connections_classes = [] # una lista di coppie di classi connesse
@@ -235,7 +236,10 @@ class Node:
 
         if "entries" in node_dict.keys():
             for entry in node_dict["entries"]:
-                nentry = tk.Entry(canvas.master, width=10, font=("Arial", 12))
+                ewidth = 10
+                if "width" in entry.keys():
+                    ewidth = entry["width"]
+                nentry = tk.Entry(canvas.master, width=ewidth, font=("Arial", 12))
                 if "type" in entry.keys():
                     nentry.type = entry["type"]
                 self.translate_items.append(nentry)
@@ -292,7 +296,7 @@ class Node:
                     dropdown_condition_selection.add_command(label=option, command=lambda option=option: set_condition_operator(option))
                 dropdown_condition_selection.post(root.winfo_pointerx(), root.winfo_pointery())
             button = tk.Button(canvas.master, text=self.if_condition_operator.get(), command=show_condition_selection_menu)
-            entry_window2 = canvas.create_window(x + width/2 - 30, y + height/2 + 10, window=button)
+            entry_window2 = canvas.create_window(x + width/2 - 15, y + height/2 + 10, window=button)
             self.items.append(entry_window2)
 
         if type == "listset":
@@ -333,9 +337,6 @@ class Node:
             canvas.tag_bind(item, '<Button-3>', self.delete_node)
 
         canvas.tag_bind("line", '<Button-3>', self.delete_line_if_overlapping_line_clicked)
-
-        canvas.bind('<Button-3>', self.start_drag_canvas)
-        canvas.bind('<B3-Motion>', self.drag_canvas)
 
         self.type = type # il tipo del nodo
         self.lines = [] # le linee che collegano il nodo con altri nodi
@@ -441,16 +442,26 @@ class Node:
                                 if instance.circle_io_types[item] != self.circle_io_types[self.start_drag_circle]:
                                     if not instance == self:
                                         if not instance.circles_is_connected[item]:
-                                            self.circles_is_connected[self.start_drag_circle] = True
                                             parent_class = instance
+
+                                            self.circles_is_connected[self.start_drag_circle] = True
                                             parent_class.circles_is_connected[item] = True
+
+                                            self.circles_line_connections[self.start_drag_circle] = self.start_drag_line_item
                                             parent_class.circles_line_connections[item] = self.start_drag_line_item
+
+                                            self.lines_circle_connections[self.start_drag_line_item] = self.start_drag_circle
                                             parent_class.lines_circle_connections[self.start_drag_line_item] = item
+
+                                            self.lines.append(self.start_drag_line_item)
                                             parent_class.lines.append(self.start_drag_line_item)
-                                            node_connections.append([self.box, parent_box])
+
                                             self.circle_connections[self.start_drag_circle] = item
                                             parent_class.circle_connections[item] = self.start_drag_circle
+
+                                            node_connections.append([self.box, parent_box])
                                             node_connections_classes.append([self, parent_class])
+
                                             return
                                         else:
                                             play_sound("cannot")
@@ -462,18 +473,6 @@ class Node:
             if self.start_drag_line_item in self.lines:
                 self.lines.remove(self.start_drag_line_item)
             self.start_drag_line_item = None
-
-    def connect_circles_with_line(self, other_node, circle, other_circle):
-        self.circles_is_connected[circle] = True
-        other_node.circles_is_connected[other_circle] = True
-        line = canvas.create_line(canvas.coords(circle)[0] + 10, canvas.coords(circle)[1] + 10, canvas.coords(other_circle)[0] + 10, canvas.coords(other_circle)[1] + 10, width=5, tags="line")
-        self.circles_line_connections[circle] = line
-        other_node.circles_line_connections[other_circle] = line
-        self.lines_circle_connections[line] = circle
-        other_node.lines_circle_connections[line] = other_circle
-        self.lines.append(line)
-        other_node.lines.append(line)
-        node_connections.append([self.box, other_node.box])
 
     def delete_line(self, event = None):
         if event is None:
@@ -506,6 +505,7 @@ class Node:
                                 node_connections_classes.remove([other_box_class, self])
                             other_box_class_circle = other_box_class.lines_circle_connections[self.circles_line_connections[item]]
                             other_box_class.delete_line_from_other_node(other_box_class_circle)
+                        self.lines_circle_connections.pop(self.circles_line_connections[item])
                         self.circles_line_connections.pop(item)
                         try:
                             self.circle_connections.pop(item)
@@ -550,14 +550,6 @@ class Node:
         
         canvas.after(10, self.update_lines)
 
-    def start_drag_canvas(self, event):
-        canvas.scan_mark(event.x, event.y)
-
-    def drag_canvas(self, event):
-        x = event.x
-        y = event.y
-        canvas.scan_dragto(x, y, gain=1)
-
     def delete_node(self, event, delete_from_nodes: bool = True):
         if not event == "import":
             if not event.state & 0x0001:
@@ -586,6 +578,27 @@ class Node:
 
 start_node = Node(100, 100, "start")
 end_node = Node(100, 250, "end")
+
+start_canvas_drag_coords = [0, 0]
+def start_drag_canvas(event):
+    global start_canvas_drag_coords
+    canvas.scan_mark(event.x, event.y)
+    start_canvas_drag_coords = [event.x, event.y]
+
+canvas.bind("<ButtonPress-3>", start_drag_canvas)
+
+def drag_canvas(event):   
+    x = event.x
+    y = event.y
+    canvas.scan_dragto(x, y, gain=1)
+
+canvas.bind("<B3-Motion>", drag_canvas)
+
+def stop_drag_canvas(event):
+    global canvas_origin, start_canvas_drag_coords
+    canvas_origin = [canvas_origin[0] + (start_canvas_drag_coords[0] - event.x), canvas_origin[1] + (start_canvas_drag_coords[1] - event.y)]
+
+canvas.bind("<ButtonRelease-3>", stop_drag_canvas)
 
 update_nodes_positions = True
 start_node_pos_label = tk.Label(root)
@@ -675,7 +688,7 @@ def translate_code(option: str):
         conns = []
         for pair in node_connections_classes:
             conns.append([pair[0], pair[1]])
-        code = flow_to_code(conns)
+        code = flow_to_code(conns, nodes)
     except TranslationException as e:
         error_label.config(text=f"{e.get_error_msg()} al nodo di tipo {e.get_causing_node().type}.")
         show_error()
@@ -728,7 +741,7 @@ node_options_submenus_dict = {"Generali": ["Stampa"],
                               "Variabili": ["Dichiara variabile", "Imposta variabile", "Dichiara lista", "Modifica lista"],
                               "Condizionali": ["Se", "Altrimenti", "Fine se", "Esamina variabile", "Caso variabile", "Fine esamina variabile"],
                               "Funzioni": ["Dichiara funzione", "Chiama funzione (senza ritorno)", "Chiama funzione (variabile)", "Fine funzione", "Ritorna"],
-                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per"]}
+                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per (lista)", "Fine per (intervallo)"]}
 node_options_dict = {"Stampa": "print",
                      "Dichiara variabile": "variabledecl",
                      "Imposta variabile": "variableset",
@@ -747,7 +760,8 @@ node_options_dict = {"Stampa": "print",
                      "Ritorna": "return",
                      "Per ogni oggetto in lista": "forlist",
                      "Per ogni numero in intervallo": "forrange",
-                     "Fine per": "endfor"}
+                     "Fine per (lista)": "endforlist",
+                     "Fine per (intervallo)": "endforrange"}
 selected_node = tk.StringVar()
 def set_selected_node(option):
     selected_node.set(option)
@@ -779,8 +793,9 @@ dropdown_node_selection.bind("<Up>", navigate_node_selection_menu)
 dropdown_node_selection.bind("<Return>", navigate_node_selection_menu)
 
 def duplicate_node(event):
-    x = event.x
-    y = event.y
+    global canvas_origin
+    x = canvas_origin[0] - 50 + event.x
+    y = canvas_origin[1] - 50 + event.y
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
@@ -795,16 +810,25 @@ def duplicate_node(event):
 canvas.bind('<Button-2>', duplicate_node)
 
 def add_node_dropdown():
-    x = root.winfo_pointerx() - canvas.winfo_rootx()
-    y = root.winfo_pointery() - canvas.winfo_rooty()
+    global canvas_origin
+    x = canvas_origin[0] - 50 + root.winfo_pointerx()
+    y = canvas_origin[1] - 50 + root.winfo_pointery() 
     node_to_create = node_options_dict[selected_node.get()]
     new_node = Node(x, y, node_to_create)
-    nodes.append(new_node)
     nodes_parent_classes[new_node.box] = new_node
-    if node_to_create == "if":
-        end_if_node = Node(x + 300, y - 50, "endif")
-        nodes.append(end_if_node)
-        nodes_parent_classes[end_if_node.box] = end_if_node
+    match node_to_create:
+        case "if":
+            end_if_node = Node(x + 300, y - 50, "endif")
+            nodes_parent_classes[end_if_node.box] = end_if_node
+        case "match":
+            end_match_node = Node(x + 300, y - 50, "endmatch")
+            nodes_parent_classes[end_match_node.box] = end_match_node
+        case "forlist":
+            end_forlist_node = Node(x + 300, y - 50, "endforlist")
+            nodes_parent_classes[end_forlist_node.box] = end_forlist_node
+        case "forrange":
+            end_forrange_node = Node(x + 300, y - 50, "endforrange")
+            nodes_parent_classes[end_forrange_node.box] = end_forrange_node
 
 canvas.bind('n', lambda event: dropdown_node_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
 
@@ -829,14 +853,17 @@ node_to_similar_options_dict = {"print": ["print"],
                                 "defcallvar": ["def", "defcall", "defcallvar", "enddef", "return"],
                                 "enddef": ["def", "defcall", "defcallvar", "enddef", "return"],
                                 "return": ["def", "defcall", "defcallvar", "enddef", "return"],
-                                "forlist": ["forlist", "endfor"],
-                                "endfor": ["forlist", "endfor"]}
+                                "forlist": ["forlist", "endforlist"],
+                                "forrange": ["forrange", "endforrange"],
+                                "endforlist": ["forlist", "endforlist"],
+                                "endforrange": ["forrange", "endforrange"]}
 
 similar_nodes_menu = tk.Menu(root, tearoff=0)
 def update_similar_nodes_menu(event):
+    global canvas_origin
     similar_nodes_menu.delete(0, tk.END)
-    x = event.x
-    y = event.y
+    x = canvas_origin[0] + event.x
+    y = canvas_origin[1] + event.y
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
@@ -1035,9 +1062,12 @@ def instantiate_app_from_import():
         flow.append(new_node_dict)
 
     node_connections_classes = eval(flow_globals["node_connections_classes"].replace(" ", ""))
+    start_node_pos = [0, 0]
     for node in flow:
         added_node = Node(int(node["x"]), int(node["y"]), node["type"])
         added_node.init_from_import(node)
+        if node["type"] == "start":
+            start_node_pos = [int(node["x"]), int(node["y"])]
     for node in nodes:
         if not node_connections_classes is None and not node_connections_classes == []:
             for pair in node_connections_classes:
@@ -1097,6 +1127,8 @@ def instantiate_app_from_import():
     update_nodes_positions = True
     update_start_node_pos()
     update_end_node_pos()
+    canvas.xview_moveto(start_node_pos[0])
+    canvas.yview_moveto(start_node_pos[1])
 
 import_button = tk.Button(root, text="Importa workflow", command=instantiate_app_from_import)
 import_button.place(x=root.winfo_width() - 150, y=40)
