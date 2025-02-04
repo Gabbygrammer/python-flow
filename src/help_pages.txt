@@ -1,39 +1,47 @@
 Manuale d'aiuto
-Benvenuto su Python Flow, il mio editor per scrivere codice Python usando dei nodi e delle linee. Simpatico, no?
-Questo manuale ti aiuta ad orientarti nell'applicazione e ti mostra come usare i nodi che hai a disposizione.
-In fondo trovi i pulsanti per cambiare pagina.
-Puoi tenerlo da parte al programma in parallelo per aiutarti!
-Spero che ti piaccia il programma (e che non compaia qualche bug birichino)!
+Benvenuto su Python Flow, il mio editor per scrivere codice Python usando dei nodi e delle linee. Simpatico, no?{n}
+Questo manuale ti aiuta ad orientarti nell'applicazione e ti mostra come usare i nodi che hai a disposizione.{n}
+In fondo trovi i pulsanti per cambiare pagina.{n}
+Puoi tenerlo da parte al programma in parallelo per aiutarti!{n}
+Spero che ti piaccia il programma (e che non compaia qualche bug birichino)!{n}{n}
 Buon divertimento, il creatore Gabriele
 
 Comandi
-Tasto mouse sinistro: trascina nodo / connessione
-Tasto mouse destro: trascina workplace / elimina connessione nodo
-Tasto Shift + mouse destro: elimina nodo senza connessioni
-Tasto mouse centrale: duplica nodo
-Tasto "N": shortcut crea nuovo nodo
-Tasto "C": aggiungi nodo simile a quello puntato dal mouse
+Tasto mouse sinistro: trascina nodo / connessione{n}
+Tasto mouse destro: trascina workplace / elimina connessione nodo{n}
+Tasto Shift + mouse destro: elimina nodo senza connessioni{n}
+Tasto mouse centrale: duplica nodo{n}
+Tasto "N": shortcut crea nuovo nodo{n}
+Tasto "C": aggiungi nodo simile a quello puntato dal mouse{n}
 
 I nodi d'inizio e di fine
 Cominciamo dalle basi: vedi quei due nodi, uno bello verde con scritto "Inizio programma" e l'altro rosso con scritto "Fine programma"?
-Sono i due nodi che danno forma ad uno script Python con Python Flow. Senza di essi, non riuscirebbe a tradurre i nodi in codice.
+Sono i due nodi che danno forma ad uno script Python con Python Flow. Senza di essi, non riuscirebbe a tradurre i nodi in codice.{n}
 L'inizio ha un pallino rosso alla sua destra e la fine ne ha uno alla sua sinistra.
 Quelli sono i punti da dove partono / arrivano i collegamenti del programma.
-Si possono collegare insieme, ma da soli non fanno nulla.
+Si possono collegare insieme, ma da soli non fanno nulla.{n}
 Infatti, se clicchi sul pulsante "Traduci codice" in alto a sinistra vedrai che ti genera un file vuoto.
 
 Categoria "Generale": il nodo Stampa
-Primo nodo: la base delle basi in Python. Possiede un cerchio a sinistra (da dove vengono i nodi prima di lui) e uno a destra (quelli dopo).
-Ha un campo dove inserire cosa stampare e sotto ha un pulsante con scritto "{x}". Quel pulsante ti serve per inserire facilmente le variabili.
+Primo nodo: la base delle basi in Python. Possiede un cerchio a sinistra (da dove vengono i nodi prima di lui) e uno a destra (quelli dopo).{n}
+Ha un campo dove inserire cosa stampare e sotto ha un pulsante con scritto "{x}". Quel pulsante ti serve per inserire facilmente le variabili.{n}
 Puoi stampare un numero o del testo, ma se vuoi stampare del testo dovrai circondarlo da un paio di virgolette doppie ("") o di virgolette singole ('').
-Fai attenzione a non alternarle (non "' o '").
+Fai attenzione a non alternarle (non "' o '").{n}
 Per esempio, se vogliamo stampare "Ciao", semplicemente crei un nodo Stampa (clicca su "Aggiungi nodo" in alto, vai su "Generale" e clicca su "Stampa").
 Poi lo colleghi al nodo iniziale da sinistra e a quello finale da destra.
-Infine, nel campo scrivi "Ciao" (con le virgolette). Premendo "Traduci codice" ora vedrai che viene scritto "Ciao".
+Infine, nel campo scrivi "Ciao" (con le virgolette). Premendo "Traduci codice" ora vedrai che viene scritto "Ciao".{n}{n}
+P.S.: se si vuole stampare testo in Java, bisogna usare obbligatoriamente le virgolette doppie in quanto esso non supporta le virgolette singole.
 
 Categoria "Variabili": il nodo Dichiara variabile
-Entriamo a parlare delle variabili: questo nodo possiede come prima un cerchio a sinistra e uno a destra, ma possiede due campi.
+Entriamo a parlare delle variabili: questo nodo possiede come prima un cerchio a sinistra e uno a destra, ma possiede due campi.{n}
 Sono separati da un "=" dove sopra devi inserire il nome della variabile (che deve contenere solo caratteri alfanumerici e trattini bassi).
 Sotto devi invece inserire il valore della variabile, sia un intero che un numero decimale (con il punto), una stringa (ricordarsi le virgolette) o anche
-il valore di un'altra variabile. Da quel nodo in poi (ovvero tutti i nodi che partono dal suo cerchio destro) potrai usare questa variabile.
+il valore di un'altra variabile. Da quel nodo in poi (ovvero tutti i nodi che partono dal suo cerchio destro) potrai usare questa variabile.{n}
 Come citato prima, per l'inserimento facilitato si dispone dei pulsanti "{x}".
+
+Categoria "Variabili": il nodo Imposta variabile
+Questo nodo ha la stessa funzione del precedente, soltanto che, al posto di definire una nuova variabile, ne imposta il suo valore.{n}
+Nel primo campo (quello superiore) si inserisce il nome della variabile già definita con il nodo Dichiara variabile (pagina precedente).
+Nel secondo, invece, si inserisce il valore che si vuole dare alla variabile.{n}
+Si possono usare operatori matematici come l'addizione (+), la sottrazione (-), la moltiplicazione (*), la divisione (/), la divisione arrotondata per difetto (//), l'elevazione (**), ecc.{n}
+Come già citato, sono disponibili due pulsanti per l'inserimento facilitato.
