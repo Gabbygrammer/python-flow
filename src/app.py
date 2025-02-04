@@ -32,11 +32,13 @@ if getattr(sys, 'frozen', False):
     temp_dir = os.path.join(sys._MEIPASS, "temp")
     help_pages_path = os.path.join(sys._MEIPASS, "help_pages.txt")
     icon = tk.PhotoImage(file=os.path.join(sys._MEIPASS, "icons\\icon.png"))
+    nodes_path = os.path.join(sys._MEIPASS, "nodes.json")
 else:
     sound_path = os.path.join(os.path.dirname(__file__), "sounds")
     temp_dir = os.path.join(os.path.dirname(__file__), "temp")
     help_pages_path = os.path.join(os.path.dirname(__file__), "help_pages.txt")
     icon = tk.PhotoImage(file=os.path.join(os.path.dirname(__file__), "icons\\icon.png"))
+    nodes_path = os.path.join(os.path.dirname(__file__), "nodes.json")
 root.iconphoto(False, icon)
 root.update_idletasks()
 
@@ -202,7 +204,7 @@ class Node:
         self.input_circles_number = 0 # il numero di cerchi di input del nodo
         self.output_circles_number = 0 # il numero di cerchi di output del nodo
 
-        node_dict = json.load(open("nodes.json", "r"))[type]
+        node_dict = json.load(open(nodes_path, "r"))[type]
 
         width = node_dict["width"]
         height = node_dict["height"]
@@ -652,7 +654,7 @@ close_error_button = tk.Button(root, text="X", font=("Arial", 10), command=hide_
 show_error_bool = False
 error_node = None
 def translate_code(option: str):
-    global show_error_bool, error_node
+    global show_error_bool, error_node, code_lang
     error_label.place_forget()
     show_error_bool = False
     for node in nodes:
@@ -688,7 +690,7 @@ def translate_code(option: str):
         conns = []
         for pair in node_connections_classes:
             conns.append([pair[0], pair[1]])
-        code = flow_to_code(conns, nodes)
+        code = flow_to_code(conns, nodes, code_lang, True if option == "execute" else False)
     except TranslationException as e:
         error_label.config(text=f"{e.get_error_msg()} al nodo di tipo {e.get_causing_node().type}.")
         show_error()
@@ -702,14 +704,21 @@ def translate_code(option: str):
         return
     match option:
         case "execute":
-            with open(f"{temp_dir}\\temp.py", "w") as file:
-                file.write(f"{code}\ninput(\"Premi invio per uscire...\")\nquit()")
-            subprocess.Popen(f"python {temp_dir}\\temp.py")
+            with open(f"{temp_dir}\\{'temp.py' if code_lang == 'python' else 'Main.java'}", "w") as file:
+                file.write(code)
+            if code_lang == "python":
+                subprocess.Popen(f"python {temp_dir}\\temp.py")
+            else:
+                subprocess.Popen(f"java {temp_dir}\\Main.java")
         case "source":
+            if code_lang != "python":
+                return
             save_path = filedialog.asksaveasfilename(filetypes=[("File di codice sorgente Python", ".py")], defaultextension=".py")
             with open(save_path, "w") as file:
                 file.write(code)
         case "app":
+            if code_lang != "python":
+                return
             save_path = filedialog.asksaveasfilename(filetypes=[("Applicazione eseguibile Python", ".exe")], defaultextension=".exe")
             with open(f"{temp_dir}\\temp.py", "w") as file:
                 file.write(f"import os\nimport subprocess\nimport sys\n\n\nsubprocess.Popen(f\"python {{os.path.join(sys._MEIPASS, \"code.py\")}}\")")
@@ -725,23 +734,12 @@ def translate_code(option: str):
             os.system("del /s /q temp.spec")
     return
 
-translation_option_selection = tk.Menu(root, tearoff=0)
-translation_options = ["Esegui nel terminale", "Traduci in codice sorgente (.py)", "Traduci in applicazione eseguibile (.exe)"]
-translation_options_dict = {"Esegui nel terminale": "execute",
-                            "Traduci in codice sorgente (.py)": "source",
-                            "Traduci in applicazione eseguibile (.exe)": "app"}
-for option in translation_options:
-    translation_option_selection.add_command(label=option, command=lambda option=option: translate_code(translation_options_dict[option]))
-
-translate_button = tk.Button(root, text="Traduci codice", command=lambda: translation_option_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
-translate_button.place(x=10, y=60)
-
 node_options_submenus = ["Generali", "Variabili", "Condizionali", "Funzioni", "Loop"]
 node_options_submenus_dict = {"Generali": ["Stampa"],
                               "Variabili": ["Dichiara variabile", "Imposta variabile", "Dichiara lista", "Modifica lista"],
                               "Condizionali": ["Se", "Altrimenti", "Fine se", "Esamina variabile", "Caso variabile", "Fine esamina variabile"],
                               "Funzioni": ["Dichiara funzione", "Chiama funzione (senza ritorno)", "Chiama funzione (variabile)", "Fine funzione", "Ritorna"],
-                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per (lista)", "Fine per (intervallo)"]}
+                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per (lista)", "Fine per (intervallo)", "Mentre", "Fine mentre"]}
 node_options_dict = {"Stampa": "print",
                      "Dichiara variabile": "variabledecl",
                      "Imposta variabile": "variableset",
@@ -761,7 +759,9 @@ node_options_dict = {"Stampa": "print",
                      "Per ogni oggetto in lista": "forlist",
                      "Per ogni numero in intervallo": "forrange",
                      "Fine per (lista)": "endforlist",
-                     "Fine per (intervallo)": "endforrange"}
+                     "Fine per (intervallo)": "endforrange",
+                     "Mentre": "while",
+                     "Fine mentre": "endwhile"}
 selected_node = tk.StringVar()
 def set_selected_node(option):
     selected_node.set(option)
@@ -794,8 +794,8 @@ dropdown_node_selection.bind("<Return>", navigate_node_selection_menu)
 
 def duplicate_node(event):
     global canvas_origin
-    x = canvas_origin[0] - 50 + event.x
-    y = canvas_origin[1] - 50 + event.y
+    x = canvas_origin[0] - 50 + event.x - root.winfo_x()
+    y = canvas_origin[1] - 50 + event.y - root.winfo_y()
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
@@ -811,8 +811,8 @@ canvas.bind('<Button-2>', duplicate_node)
 
 def add_node_dropdown():
     global canvas_origin
-    x = canvas_origin[0] - 50 + root.winfo_pointerx()
-    y = canvas_origin[1] - 50 + root.winfo_pointery() 
+    x = canvas_origin[0] - 50 + root.winfo_pointerx() - root.winfo_x()
+    y = canvas_origin[1] - 50 + root.winfo_pointery() - root.winfo_y()
     node_to_create = node_options_dict[selected_node.get()]
     new_node = Node(x, y, node_to_create)
     nodes_parent_classes[new_node.box] = new_node
@@ -829,6 +829,9 @@ def add_node_dropdown():
         case "forrange":
             end_forrange_node = Node(x + 300, y - 50, "endforrange")
             nodes_parent_classes[end_forrange_node.box] = end_forrange_node
+        case "while":
+            end_while_node = Node(x + 300, y - 50, "endwhile")
+            nodes_parent_classes[end_while_node.box] = end_while_node
 
 canvas.bind('n', lambda event: dropdown_node_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
 
@@ -862,8 +865,8 @@ similar_nodes_menu = tk.Menu(root, tearoff=0)
 def update_similar_nodes_menu(event):
     global canvas_origin
     similar_nodes_menu.delete(0, tk.END)
-    x = canvas_origin[0] + event.x
-    y = canvas_origin[1] + event.y
+    x = canvas_origin[0] + event.x - root.winfo_x()
+    y = canvas_origin[1] + event.y - root.winfo_y()
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
@@ -899,7 +902,7 @@ similar_nodes_menu.bind("<Up>", navigate_similar_nodes_selection_menu)
 similar_nodes_menu.bind("<Return>", navigate_similar_nodes_selection_menu)
 
 current_page = 0
-def help_window(): # TODO: aggiungere altre pagine
+def help_window():
     help_window = tk.Toplevel(root)
     help_window.title("Aiuto")
     help_window.geometry("600x600")
@@ -911,7 +914,7 @@ def help_window(): # TODO: aggiungere altre pagine
     with open(help_pages_path, "r") as f:
         for page in f.read().split("\n\n"):
             page2 = page.replace(page.split("\n")[0] + "\n", "")
-            pages.append([page.split("\n")[0], page2.replace("\n", " ")])
+            pages.append([page.split("\n")[0], page2.replace("\n", " ").replace("{n}", "\n")])
 
     def fix_word_cutting(text, charwidth):
         current_charwidth = 0
@@ -924,15 +927,17 @@ def help_window(): # TODO: aggiungere altre pagine
             else:
                 new_text += "\n" + word + " "
                 current_charwidth = len(word) + 1 - (charwidth - current_charwidth)
+            if word.endswith("\n"):
+                current_charwidth = 0
         new_text.replace("\n\n", "\n")
         return new_text
 
     page_title = tk.Label(help_window, text=pages[current_page][0], font=("Arial", 13, "bold"))
     page_title.place(x=10, y=10)
-    page_content = tk.Text(help_window, height=round(help_window.winfo_height() / 22) + 1, width=round(help_window.winfo_width() / 8.5) - 1)
+    page_content = tk.Text(help_window, height=round(help_window.winfo_height() / 22) + 1, width=round(help_window.winfo_width() / 8.5) - 1, wrap=tk.NONE)
     page_content.charwidth = round((help_window.winfo_width() - 20) / 8.5)
     page_content.place(x=10, y=40)
-    page_content.insert(tk.INSERT, fix_word_cutting(pages[current_page][1], page_content.charwidth))
+    page_content.insert(tk.INSERT, fix_word_cutting(pages[current_page][1].encode("utf-8").decode("latin-1"), page_content.charwidth))
     page_content.config(state=tk.DISABLED)
     page_content_scrollbar = tk.Scrollbar(help_window, orient=tk.VERTICAL, command=page_content.yview)
     page_content_scrollbar.place(x=help_window.winfo_width() - 20, y=40, height=round(help_window.winfo_height() - 80))
@@ -990,9 +995,6 @@ def help_window(): # TODO: aggiungere altre pagine
 
     help_window.mainloop()
 
-help_button = tk.Button(root, text="Aiuto", command=help_window)
-help_button.place(x=10, y=110)
-
 def export_workflow():
     export_file = filedialog.asksaveasfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
     if not os.path.exists(os.path.dirname(export_file)):
@@ -1026,9 +1028,6 @@ def export_workflow():
             if not node == nodes[-1]:
                 f.write(",,,")
         f.write("]")
-
-export_button = tk.Button(root, text="Esporta workflow", command=export_workflow)
-export_button.place(x=root.winfo_width() - 150, y=10)
 
 def instantiate_app_from_import():
     global nodes, node_connections, node_connections_classes, nodes_parent_classes, update_nodes_positions
@@ -1130,9 +1129,6 @@ def instantiate_app_from_import():
     canvas.xview_moveto(start_node_pos[0])
     canvas.yview_moveto(start_node_pos[1])
 
-import_button = tk.Button(root, text="Importa workflow", command=instantiate_app_from_import)
-import_button.place(x=root.winfo_width() - 150, y=40)
-
 def resize_root():
     current_width = root.winfo_width()
     current_height = root.winfo_height()
@@ -1140,9 +1136,6 @@ def resize_root():
         if show_error_bool:
             error_label.place(x=(root.winfo_width() - error_label.winfo_reqwidth()) / 2)
             close_error_button.place(x=(root.winfo_width() - close_error_button.winfo_reqwidth()) / 100 * 95)
-        if root.width >= 600:
-            export_button.place(x=root.winfo_width() - 150)
-            import_button.place(x=root.winfo_width() - 150)
     if current_height != root.height:
         if show_error_bool:
             error_label.place(y=root.winfo_height() - 50)
@@ -1151,5 +1144,43 @@ def resize_root():
     root.height = current_height
     root.after(10, resize_root)
 resize_root()
+
+code_lang = "python"
+using_python = tk.BooleanVar(value=True)
+using_java = tk.BooleanVar(value=False)
+
+def change_code_lang(lang):
+    global code_lang
+    code_lang = lang
+
+    match code_lang:
+        case "python":
+            using_python.set(True)
+            using_java.set(False)
+        case "java":
+            using_python.set(False)
+            using_java.set(True)
+
+root_menu = tk.Menu(root, tearoff=0)
+root.config(menu=root_menu)
+
+file_menu = tk.Menu(root_menu, tearoff=0)
+file_menu.add_command(label="Importa workflow", command=instantiate_app_from_import)
+file_menu.add_command(label="Esporta workflow", command=export_workflow)
+
+execute_menu = tk.Menu(root_menu, tearoff=0)
+execute_menu.add_command(label="Esegui nel terminale", command=lambda: translate_code("execute"))
+execute_menu.add_command(label="Traduci in codice sorgente", command=lambda: translate_code("source"))
+execute_menu.add_command(label="Traduci in applicazione eseguibile (.exe)", command=lambda: translate_code("app"))
+execute_menu.add_separator()
+execute_menu.add_checkbutton(label="Linguaggio: Python", command=lambda: change_code_lang("python"), onvalue=True, offvalue=False, variable=using_python)
+execute_menu.add_checkbutton(label="Linguaggio: Java", command=lambda: change_code_lang("java"), onvalue=True, offvalue=False, variable=using_java)
+
+help_menu = tk.Menu(root_menu, tearoff=0)
+help_menu.add_command(label="Aiuto", command=help_window)
+
+root_menu.add_cascade(label="File", menu=file_menu)
+root_menu.add_cascade(label="Esegui", menu=execute_menu)
+root_menu.add_cascade(label="Aiuto", menu=help_menu)
 
 root.mainloop()
