@@ -168,7 +168,7 @@ class Node:
     def __str__(self, mode):
         global if_condition_options
         if mode == "log":
-            return f"Node(\nx: {self.x}\ny: {self.y}\ntype: {self.type}\nbox: {self.box}\nitems: {self.items}\ntranslate_items: {self.translate_items}\ncircles: {self.circles}\ncircle_types: {self.circle_types}\ncircle_io_types: {self.circle_io_types}\ncircles_is_connected: {self.circles_is_connected}\ncircle_connections: {self.circle_connections}\ncircles_line_connections: {self.circles_line_connections}\nlines_circle_connections: {self.lines_circle_connections}\ninput_circles_number: {self.input_circles_number}\noutput_circles_number: {self.output_circles_number}\n{f"condition_operator: {if_condition_options.index(self.if_condition_operator)}" if self.type == "if" or self.type == "while" else ''})"
+            return f"Node(\nx: {self.x}\ny: {self.y}\ntype: {self.type}\nbox: {self.box}\nitems: {self.items}\ntranslate_items: {self.translate_items}\ncircles: {self.circles}\ncircle_types: {self.circle_types}\ncircle_io_types: {self.circle_io_types}\ncircles_is_connected: {self.circles_is_connected}\ncircle_connections: {self.circle_connections}\ncircles_line_connections: {self.circles_line_connections}\nlines_circle_connections: {self.lines_circle_connections}\ninput_circles_number: {self.input_circles_number}\noutput_circles_number: {self.output_circles_number}\n{f"condition_operator: {if_condition_options.index(self.if_condition_operator.get())}" if self.type == "if" else {if_condition_options.index(self.if_condition_operator.get())} if self.type == "while" else ''})"
         elif mode == "export":
             other_nodes = []
             for pair in node_connections_classes:
@@ -190,7 +190,7 @@ class Node:
                 if isinstance(item, tk.Entry):
                     input_texts.append(item.get())
 
-            return f"{{id:{self.id},,x:{int(canvas.coords(self.box)[0])},,y:{int(canvas.coords(self.box)[1])},,type:{self.type},,circle_connections_list:{circle_connections_list},,input_circles_number:{self.input_circles_number},,output_circles_number:{self.output_circles_number},,input_texts:{input_texts}}}"
+            return f"{{id:{self.id},,x:{int(canvas.coords(self.box)[0])},,y:{int(canvas.coords(self.box)[1])},,type:{self.type},,circle_connections_list:{circle_connections_list},,input_circles_number:{self.input_circles_number},,output_circles_number:{self.output_circles_number},,input_texts:{input_texts}{f",,condition_operator: {if_condition_options.index(self.if_condition_operator.get())}" if self.type == "if" or self.type == "while" else ''}}}"
 
     def __init__(self, x: int, y: int, type: str, import_args: list = []):    
         self.x = x
@@ -698,6 +698,8 @@ def translate_code(option: str):
                 save_path = filedialog.asksaveasfilename(filetypes=[("File di codice sorgente Python", ".py")], defaultextension=".py")
             else:
                 save_path = filedialog.asksaveasfilename(filetypes=[("File di codice sorgente Java", ".java")], defaultextension=".java")
+            if not os.path.exists(save_path):
+                return
             with open(save_path, "w") as file:
                 file.write(code)
         case "app":
@@ -778,8 +780,8 @@ dropdown_node_selection.bind("<Return>", navigate_node_selection_menu)
 
 def duplicate_node(event):
     global canvas_origin
-    x = canvas_origin[0] - 50 + event.x - root.winfo_x()
-    y = canvas_origin[1] - 50 + event.y - root.winfo_y()
+    x = canvas_origin[0] - 50 + event.x
+    y = canvas_origin[1] - 50 + event.y
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
