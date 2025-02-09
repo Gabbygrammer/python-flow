@@ -5,21 +5,33 @@ Un programma in Python che, usando un node-based editor e ispirandosi ai diagram
 
 ## Screenshot
 
-![Screenshot 2025-01-12 153032](https://github.com/user-attachments/assets/2b1343c1-76ea-4e24-b2b3-b99347b06d00)
+![Screenshot 2025-02-09 153218](https://github.com/user-attachments/assets/ca2514b8-49e0-4a9d-8147-3c9ca895f3a6)
 
 Creazione di un programma semplice
 
-![Screenshot 2025-01-12 153108](https://github.com/user-attachments/assets/83aa50bf-f498-4fcd-ab4b-9636a8f3dd76)
+![Screenshot 2025-02-09 153241](https://github.com/user-attachments/assets/be52a156-0607-430e-9a5a-e2a79e61d499)
 
 Esecuzione nel terminale del programma semplice
 
-![Screenshot 2025-01-12 153301](https://github.com/user-attachments/assets/cee7a66a-18be-406f-9c43-8395307dcb25)
+![Screenshot 2025-02-09 153414](https://github.com/user-attachments/assets/cf901bb1-829e-43c0-8785-c23e7dd0b477)
 
 Creazione di un programma più complesso
 
-![Screenshot 2025-01-12 153313](https://github.com/user-attachments/assets/aa8b88f9-1e35-47a5-9003-c0aa14cdb488)
+![Screenshot 2025-02-09 153442](https://github.com/user-attachments/assets/1f8132e4-a714-46c5-8ba5-76d8e7a50862)
 
 Esecuzione nel terminale del programma più complesso
+
+![Screenshot 2025-02-09 153511](https://github.com/user-attachments/assets/44812d9e-0782-41a3-8042-6a72a918011f)
+
+Traduzione del programma più complesso in codice sorgente
+
+![Screenshot 2025-02-09 153627](https://github.com/user-attachments/assets/7ee1e321-b56d-4dbf-8e88-4b408c2cdbc9)
+
+Codice sorgente tradotto in Python
+
+![Screenshot 2025-02-09 160747](https://github.com/user-attachments/assets/d2bb314e-0b78-4ec1-8722-3a5ae71fd162)
+
+Codice sorgente tradotto in Java
 
 
 ## Comandi
