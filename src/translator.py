@@ -712,7 +712,7 @@ def translate_to_code(language, add_final_block: bool, skip_print: bool):
         code += "\ninput(\"Premi invio per uscire...\")\nquit()"
     elif language == "java":
         if not add_final_block:
-            code += "    }\n}"
+            code += "\n    }"
         else:
             space = " "*8
             code += f"\n{space}Scanner scanner = new Scanner(System.in);\n{space}System.out.println(\"Premi invio per uscire...\");\n{space}scanner.nextLine();\n{space}scanner.close();\n{space}System.exit(0);\n    }}\n"
