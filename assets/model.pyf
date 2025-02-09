@@ -1,0 +1,3 @@
+{node_connections_classes:[]}
+{circles:[]}
+[{id:1,,x:100,,y:100,,type:start,,circle_connections_list:[],,input_circles_number:0,,output_circles_number:1,,input_texts:[]},,,{id:2,,x:100,,y:250,,type:end,,circle_connections_list:[],,input_circles_number:1,,output_circles_number:0,,input_texts:[]}]
