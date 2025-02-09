@@ -22,12 +22,13 @@ def initialize(node_connections: list):
             return True
     return False
 
-def flow_to_code(node_connections: list, nodes: list, language: str, add_final_block: bool):
+def flow_to_code(node_connections: list, nodes: list, language: str, add_final_block: bool, skip_print: bool = False):
     if initialize(node_connections):
         sort_connections(node_connections, nodes)
-        print_result()
+        if not skip_print:
+            print_result()
         try:
-            code = translate_to_code(language, add_final_block)
+            code = translate_to_code(language, add_final_block, skip_print)
             return code
         except TranslationException as e:
             raise e
@@ -183,7 +184,7 @@ syntax = {
         "case": "case $0:",
         "forlist": "for $0 in $1:",
         "forrange": "for $0 in range($1, $2):",
-        "while": "while $0:"
+        "while": "while $0 $1 $2:"
     },
 
     "java": {
@@ -191,8 +192,10 @@ syntax = {
         "variabledecl": "type $0 = $1;",
         "variableset": "$0 = $1;",
         "if": "if ($0 $1 $2) {",
-        "ifnotin": "if (!$0 in $1) {",
-        "ifnotis": "if (!$0 is $1) {",
+        "ifin": "if ($1.contains($0)) {",
+        "ifnotin": "if (!$1.contains($0)) {",
+        "ifis": "if ($0 instanceof $1) {",
+        "ifnotis": "if (!($0 instanceof $1)) {",
         "else": "} else {",
         "def": "public static type $0($1) {",
         "defcall": "$0($1);",
@@ -207,7 +210,7 @@ syntax = {
         "case": "case $0:",
         "forlist": "for (type $0 : $1) {",
         "forrange": "for (int $0 = $1; i < $2; i++) {",
-        "while": "while ($0) {"
+        "while": "while ($0 $1 $2) {"
     }
 }
 
@@ -216,7 +219,7 @@ defined_funcs = []
 declared_lists = []
 list_contents = {}
 variable_types = {}
-def translate_to_code(language, add_final_block: bool):
+def translate_to_code(language, add_final_block: bool, skip_print: bool):
     global last_node, declared_vars, defined_funcs, declared_lists
     code = ""
     indentation_level = 0
@@ -291,11 +294,30 @@ def translate_to_code(language, add_final_block: bool):
                     except AttributeError:
                         pass
                 line_to_add = f"{"    " * indentation_level}{lang_syntax["variableset"].replace("$0", variable_name).replace("$1", variable_value)}\n"
-                variable_types[variable_name] = get_value_type(variable_value)
+                operation_symbols = {"python": ["+", "-", "*", "/"], "java": ["+", "-", "*", "/"]}
+                def check_for_operations():
+                    for symbol in operation_symbols[language]:
+                        if symbol in variable_value:
+                            return True
+                    return False
+                if not check_for_operations():
+                    variable_types[variable_name] = get_value_type(variable_value)
 
             case "if":
                 try:
-                    if condition_dict[node.if_condition_operator.get()] == "not is":
+                    if condition_dict[node.if_condition_operator.get()] == "is" and language == "java":
+                        line = f"{"    " * indentation_level}{lang_syntax["ifis"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get())}\n"
+                        if validate_string(line):
+                            line_to_add = line
+                        else:
+                            raise TranslationException("Stringa non chiusa correttamente", node)
+                    elif condition_dict[node.if_condition_operator.get()] == "in" and language == "java":
+                        line = f"{"    " * indentation_level}{lang_syntax["ifin"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get())}\n"
+                        if validate_string(line):
+                            line_to_add = line
+                        else:
+                            raise TranslationException("Stringa non chiusa correttamente", node)
+                    elif condition_dict[node.if_condition_operator.get()] == "not is":
                         line = f"{"    " * indentation_level}{lang_syntax["ifnotis"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get())}\n"
                         if validate_string(line):
                             line_to_add = line
@@ -308,7 +330,7 @@ def translate_to_code(language, add_final_block: bool):
                         else:
                             raise TranslationException("Stringa non chiusa correttamente", node)
                     else:
-                        line = f"{"    " * indentation_level}{lang_syntax["if"].replace("$0", node.translate_items[0].get()).replace("$1", node.if_condition_operator.get()).replace("$2", node.translate_items[1].get())}\n"
+                        line = f"{"    " * indentation_level}{lang_syntax["if"].replace("$0", node.translate_items[0].get()).replace("$1", condition_dict[node.if_condition_operator.get()]).replace("$2", node.translate_items[1].get())}\n"
                         if validate_string(line):
                             if not "\"" and not "'" in node.translate_items[0].get():
                                 if not node.translate_items[0].get() in declared_vars:
@@ -635,8 +657,39 @@ def translate_to_code(language, add_final_block: bool):
 
             case "while":
                 try:
-                    condition = node.translate_items[0].get()
-                    line_to_add = f"{"    " * indentation_level}{lang_syntax["while"].replace("$0", condition)}\n"
+                    first_part = ""
+                    second_part = ""
+                    for item in node.translate_items:
+                        if item.type == "first":
+                            first_part = item.get()
+                        elif item.type == "second":
+                            second_part = item.get()
+                    if condition_dict[node.if_condition_operator.get()] == "is" and language == "java":
+                        line = f"{"    " * indentation_level}{lang_syntax["ifis"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get()).replace("if", "while")}\n"
+                        if validate_string(line):
+                            line_to_add = line
+                        else:
+                            raise TranslationException("Stringa non chiusa correttamente", node)
+                    elif condition_dict[node.if_condition_operator.get()] == "in" and language == "java":
+                        line = f"{"    " * indentation_level}{lang_syntax["ifin"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get()).replace("if", "while")}\n"
+                        if validate_string(line):
+                            line_to_add = line
+                        else:
+                            raise TranslationException("Stringa non chiusa correttamente", node)
+                    elif condition_dict[node.if_condition_operator.get()] == "not is":
+                        line = f"{"    " * indentation_level}{lang_syntax["ifnotis"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get()).replace("if", "while")}\n"
+                        if validate_string(line):
+                            line_to_add = line
+                        else:
+                            raise TranslationException("Stringa non chiusa correttamente", node)
+                    elif condition_dict[node.if_condition_operator.get()] == "not in":
+                        line = f"{"    " * indentation_level}{lang_syntax["ifnotin"].replace("$0", node.translate_items[0].get()).replace("$1", node.translate_items[1].get()).replace("if", "while")}\n"
+                        if validate_string(line):
+                            line_to_add = line
+                        else:
+                            raise TranslationException("Stringa non chiusa correttamente", node)
+                    else:
+                        line_to_add = f"{"    " * indentation_level}{lang_syntax["while"].replace("$0", first_part).replace("$1", condition_dict[node.if_condition_operator.get()]).replace("$2", second_part)}\n"
                     indentation_level += 1
                 except:
                     pass
@@ -674,5 +727,6 @@ def translate_to_code(language, add_final_block: bool):
                 code = code.replace(f"ArrayList<Object> {key} = new ArrayList<Object>()", f"{variable_types[key]} {key} = new {variable_types[key]}()")
         code += "\n}"
 
-    print(f"\n\n------TRANSLATED CODE------\n{code}")
+    if not skip_print:
+        print(f"\n\n------TRANSLATED CODE------\n{code}")
     return code
