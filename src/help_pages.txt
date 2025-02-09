@@ -6,6 +6,9 @@ Puoi tenerlo da parte al programma in parallelo per aiutarti!{n}
 Spero che ti piaccia il programma (e che non compaia qualche bug birichino)!{n}{n}
 Buon divertimento, il creatore Gabriele
 
+Inizio sezione: Informazioni generali
+Le pagine che seguono sono dedicate a comandi generali, interfaccia utente e all'utilizzo generale del programma.
+
 Comandi
 Tasto mouse sinistro: trascina nodo / connessione{n}
 Tasto mouse destro: trascina workplace / elimina connessione nodo{n}
@@ -13,6 +16,26 @@ Tasto Shift + mouse destro: elimina nodo senza connessioni{n}
 Tasto mouse centrale: duplica nodo{n}
 Tasto "N": shortcut crea nuovo nodo{n}
 Tasto "C": aggiungi nodo simile a quello puntato dal mouse{n}
+
+Menu: la sezione File
+In questa sezione del menu che trovi in cima alla finestra principale trovi i comandi per la creazione, l'apertura e il salvataggio dei file esclusivi a Python Flow (.pyf).{n}
+"Nuovo file" crea un nuovo file Python Flow da zero, "Apri" carica un file esistente in precedenza, "Salva" salva il file corrente (chiedendo il luogo di salvataggio se non salvato), "Salva con nome" permette di creare un nuovo file su cui salvare e "Chiudi file" chiude il file corrente.{n}
+A proposito di file, premi sul nome del file in alto a destra per vedere tutti i file aperti correntemente.
+
+Menu: la sezione Esegui
+Questa sezione presenta tutti i metodi di esecuzione del codice, insomma, dove la "magia" avviene e si trasforma il tuo flow in codice eseguibile.{n}
+"Esegui nel terminale" apre una nuova istanza del terminale in cui viene automaticamente eseguito il codice, "Trasforma in codice sorgente" permette di salvare il codice tradotto e "Traduci in applicazione eseguibile (.exe)" (disponibile solo in Python) trasforma il codice in un'applicazione eseguibile senza il bisogno di scaricare l'interprete di Python.{n}
+Sotto, invece, si trovano tutti i linguaggi di programmazione disponibili per la traduzione.
+Al momento vi si trova Python e Java.
+Il visto mostra il linguaggio di traduzione selezionato attualmente.
+
+Menu: la sezione Aiuto
+Penso che hai scoperto cosa serve questa sezione, in quanto stai leggendo questo testo.{n}
+Per ripassare, qui trovi la magnifica finestra di aiuto con tutta la documentazione scritta da me (e non ci vogliono pochi secondi a scriverla).
+
+Inizio sezione: Nodi
+A partire dalla pagina seguente si entra nel dettaglio sulle specifiche di ogni. Singolo. Nodo.{n}
+Tutti i nodi che esistono in questo programma vengono esaminati e spiegati.
 
 I nodi d'inizio e di fine
 Cominciamo dalle basi: vedi quei due nodi, uno bello verde con scritto "Inizio programma" e l'altro rosso con scritto "Fine programma"?
@@ -24,7 +47,7 @@ Infatti, se clicchi sul pulsante "Traduci codice" in alto a sinistra vedrai che 
 
 Categoria "Generale": il nodo Stampa
 Primo nodo: la base delle basi in Python. Possiede un cerchio a sinistra (da dove vengono i nodi prima di lui) e uno a destra (quelli dopo).{n}
-Ha un campo dove inserire cosa stampare e sotto ha un pulsante con scritto "{x}". Quel pulsante ti serve per inserire facilmente le variabili.{n}
+Ha un campo dove inserire cosa stampare.{n}
 Puoi stampare un numero o del testo, ma se vuoi stampare del testo dovrai circondarlo da un paio di virgolette doppie ("") o di virgolette singole ('').
 Fai attenzione a non alternarle (non "' o '").{n}
 Per esempio, se vogliamo stampare "Ciao", semplicemente crei un nodo Stampa (clicca su "Aggiungi nodo" in alto, vai su "Generale" e clicca su "Stampa").
@@ -36,12 +59,110 @@ Categoria "Variabili": il nodo Dichiara variabile
 Entriamo a parlare delle variabili: questo nodo possiede come prima un cerchio a sinistra e uno a destra, ma possiede due campi.{n}
 Sono separati da un "=" dove sopra devi inserire il nome della variabile (che deve contenere solo caratteri alfanumerici e trattini bassi).
 Sotto devi invece inserire il valore della variabile, sia un intero che un numero decimale (con il punto), una stringa (ricordarsi le virgolette) o anche
-il valore di un'altra variabile. Da quel nodo in poi (ovvero tutti i nodi che partono dal suo cerchio destro) potrai usare questa variabile.{n}
-Come citato prima, per l'inserimento facilitato si dispone dei pulsanti "{x}".
+il valore di un'altra variabile. Da quel nodo in poi (ovvero tutti i nodi che partono dal suo cerchio destro) potrai usare questa variabile.
 
 Categoria "Variabili": il nodo Imposta variabile
 Questo nodo ha la stessa funzione del precedente, soltanto che, al posto di definire una nuova variabile, ne imposta il suo valore.{n}
-Nel primo campo (quello superiore) si inserisce il nome della variabile già definita con il nodo Dichiara variabile (pagina precedente).
+Nel primo campo (quello superiore) si inserisce il nome della variabile definita in precedenza con il nodo Dichiara variabile (pagina precedente).
 Nel secondo, invece, si inserisce il valore che si vuole dare alla variabile.{n}
-Si possono usare operatori matematici come l'addizione (+), la sottrazione (-), la moltiplicazione (*), la divisione (/), la divisione arrotondata per difetto (//), l'elevazione (**), ecc.{n}
-Come già citato, sono disponibili due pulsanti per l'inserimento facilitato.
+Si possono usare operatori matematici come l'addizione (+), la sottrazione (-), la moltiplicazione (*), la divisione (/), la divisione arrotondata per difetto (//), l'elevazione (**), ecc.
+
+Categoria "Variabili": il nodo Dichiara lista
+Questo nodo permette di dichiarare un tipo speciale di variabile: la lista.{n}
+Con essa si possono raggruppare multipli valori in una sola variabile.
+Usandolo, per esempio, in combinazione con il nodo "Per ogni oggetto in lista", permettendo di performare diverse azioni su ogni oggetto nella lista.{n}
+Possiede un solo campo per definire il nome della lista.
+
+Categoria "Variabili": il nodo Modifica lista
+Questo nodo permette di modificare una lista dichiarata precedentemente con il nodo "Dichiara lista" e permette di aggiungere o rimuovere oggetti da essa.{n}
+Il pulsante in cima definisce l'azione da applicare (aggiungi o rimuovi), il primo campo definisce l'oggetto / gli oggetti da aggiungere / rimuovere e il secondo campo definisce la lista su cui performare l'azione.{n}
+Per ridurre il bisogno di ripetere questo nodo si possono usare dei punti virgola (;) per separare i multipli oggetti in un solo nodo (per esempio, per aggiungere 1 e 2 alla lista, puoi scrivere 1;2).
+
+Categoria "Condizionali": il nodo Se
+Eccoci nei nodi condizionali: questo permette di verificare se un determinato valore (oppure, con maggior frequenza, una variabile) rispetta una determinata condizione.{n}
+La serie di nodi sottoposti a questa condizione sono legati al cerchio "se", mentre il continuo del flow incondizionato si lega al cerchio "dopo".{n}
+Le possibili condizioni sono queste:{n}
+    "==" --> uguale a{n}
+    "!=" --> diverso di{n}
+    ">" --> maggiore di{n}
+    "<" --> minore di{n}
+    ">=" --> maggiore o uguale a{n}
+    "<=" --> minore o uguale a{n}
+    "e'" --> verifica se il tipo di variabile corrisponde{n}
+    "non e'" --> verifica se il tipo di variabile non corrisponde{n}
+    "e' in" --> verifica se una lista contiene quel valore{n}
+    "non e' in" --> verifica se una lista non contiene quel valore{n}{n}
+Tra i due nodi (questo e il nodo "Fine se"), si possono inserire tutti i nodi per la cui esecuzione viene richiesta la soddisfazione della condizione.{n}
+Se non si termina un nodo "Se" con il rispettivo nodo finale "Fine se", il codice non viene tradotto.
+
+Categoria "Condizionali": il nodo Altrimenti
+Questo nodo permette, all'interno di una condizione determinata dal nodo "Se" (vedi pagina precedente), di definire dei nodi da eseguire nel caso che la condizione non sia rispettata.{n}
+Non ha alcun campo, richiede soltanto il posizionamento tra un nodo "Se" e il suo nodo finale ("Fine se").
+
+Categoria "Condizionali": il nodo Fine se
+Questo nodo fa parte della serie dei nodi "finali", ovvero quelli che determinano la fine di una serie di nodi la cui esecuzione dipende dal nodo ch'esso chiude.{n}
+In questo caso, viene posizionato dopo un nodo "Se", precisamente dopo tutti i nodi che si vogliono sottoporre alla condizione del nodo "Se".{n}
+Senza di esso, il codice non funziona.
+
+Categoria "Condizionali": il nodo Esamina variabile
+Questo nodo particolare serve a controllare il valore di una variabile ed eseguire del codice in base ad esso.{n}
+Sostituisce l'utilizzo di multipli nodi "Se".{n}
+L'unico campo determina la variabile (o anche valore, nonostante non abbia senso) che si desidera esaminare.{n}
+Successivamente, partendo dal cerchio "casi", si inserisce almeno un nodo "Caso variabile" (vedi successivo) che definisce il codice da eseguire ogniqualvolta il valore della variabile sia uguale a quanto definito in esso.{n}
+Anche questo nodo deve terminare con il suo nodo finale, ovvero "Fine esamina variabile".
+
+Categoria "Condizionali": il nodo Caso variabile
+Questo nodo viene usato in combinazione con il nodo "Esamina variabile" (vedi precedente) e serve a definire il codice da eseguire quando il valore della variabile definita nel nodo precedente equivale a quello definito nel campo.{n}
+Deve essere obbligatoriamente posizionato tra un nodo "Esamina variabile" e un nodo "Caso variabile".
+
+Categoria "Condizionali": il nodo Fine esamina variabile
+Questo nodo appartiene anch'esso alla serie dei nodi finali, in quanto esso chiude il nodo "Esamina variabile".
+
+Categoria "Funzioni": il nodo Dichiara funzione
+Ed eccoci alle funzioni: questo nodo serve a definire un pezzo di codice riutilizzabile in tutto il codice dopo di esso.{n}
+Possiede due campi: il primo definisce il nome della funzione con cui richiamare il codice, il secondo definisce eventuali argomenti.{n}
+Gli argomenti sono dei valori che si possono passare alla funzione quando essa viene chiamata da un nodo "Chiama funzione" (senza ritorno o variabile) e che possono essere usati dentro di essa.{n}
+Per definirli, bisogna inserire il nome che li si vuole dare, separandoli da una virgola (","), con 0 o 1 spazi(o).{n}
+Poi saranno disponibili nel corpo della funzione.
+
+Categoria "Funzioni": il nodo Chiama funzione (senza ritorno)
+Questo nodo serve a chiamare (far eseguire) un pezzo di codice dichiarato precedentemente con il nodo "Dichiara funzione".{n}
+Similarmente, questo nodo ha due campi: nel primo va il nome della funzione e nel secondo vanno i parametri (i valori per gli argomenti definiti prima).{n}
+La differenza tra argomenti e parametri dipende solo dal fatto che rispettivamente sono le variabili esclusive alla funzione e i valori delle variabili.{n}
+I parametri devono essere inseriti nell'ordine in cui sono stati dichiarati, ovvero una funzione con argomenti a, b viene chiamata con parametri 1 (= valore di a), 2 (= valore di b).
+Anche questi possono essere inseriti con 0 o 1 spazi(o) tra di loro, separati da una virgola.
+
+Categoria "Funzioni": il nodo Chiama funzione (variabile)
+Questo nodo funziona come il precedente, ma possiede una variabile per salvare il risultato di una funzione (determinato dal nodo "Ritorna" alla fine della funzione al posto del nodo "Fine funzione").
+
+Categoria "Funzioni": il nodo Fine funzione
+Questo nodo si posiziona come terzo nodo nella serie dei nodi finali, completando una definizione di una funzione (senza un valore di ritorno).
+
+Categoria "Funzioni": il nodo Ritorna
+Come il nodo precedente, questo fa parte dei nodi finali e completa una definizione di una funzione, ma anche aggiungendo un valore di ritorno (che viene salvato nella variabile definita nel nodo "Chiama funzione (variabile)").{n}
+Esso accetta sia valori costanti (come stringhe e numeri) sia variabili (da cui estrarne il valore).
+
+Categoria "Loop": il nodo Per ogni oggetto in lista
+Eccoci ad un'altra categoria interessante: i loop. Questo nodo permette di iterare (come si suol dire nel gergo di programmazione), ovvero fare un loop, tra tutti gli oggetti in una lista ed eseguire del codice su ognuno di essi.{n}
+Il nodo ha due campi: il primo determina il nome della variabile che contiene il singolo oggetto, il secondo determina il nome della lista su cui iterare.{n}
+Questo nodo necessita di una chiusura finale tramite il nodo "Fine per (lista)".
+
+Categoria "Loop": il nodo Fine per (lista)
+Questo nodo finale serve a chiudere un nodo "Per ogni oggetto in lista".
+
+Categoria "Loop": il nodo Per ogni numero in intervallo
+Questo nodo ha delle similitudini con il nodo "Per ogni oggetto in lista", soltanto che la lista viene sostituita con un intervallo di numeri (interi).{n}
+Ha tre campi: il primo dona il nome della variabile con il numero attuale dell'intervallo, il secondo dona l'inizio dell'intervallo e il terzo dona il numero finale dell'intervallo (escluso).{n}
+Deve essere chiuso dal nodo "Fine per (intervallo)".
+
+Categoria "Loop": il nodo Fine per (intervallo)
+Questo nodo finale chiude un nodo "Per ogni numero in intervallo".
+
+Categoria "Loop": il nodo Mentre
+Questo genere di loop ha degli aspetti in comune sia con il nodo "Se", da cui prende gli operatori condizionali, sia dai loop, in quanto, beh, fa un loop.{n}
+Ha due campi dove inserire i valori / le variabili da confrontare, mentre al centro possiede lo stesso pulsante per gli operatori come il nodo "Se" (vedi il nodo "Se" per i significati degli operatori).{n}
+In questo modo, il codice che segue (da sopra) viene eseguito fino a che la condizione diventa falsa.{n}
+Deve essere chiuso dal suo rispettivo nodo finale (vedi seguente).
+
+Categoria "Loop": il nodo Fine mentre
+Questo nodo determina la fine di un nodo "Mentre".
