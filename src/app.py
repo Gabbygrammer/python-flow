@@ -16,6 +16,7 @@ root = tk.Tk()
 root.geometry("800x600")
 root.width = 800
 root.height = 600
+root.minsize(450, 450)
 root.title("Python Flow - Editor flowchart per Python")
 
 canvas = tk.Canvas(root, width=1, height=1)
@@ -33,12 +34,14 @@ if getattr(sys, 'frozen', False):
     help_pages_path = os.path.join(sys._MEIPASS, "help_pages.txt")
     icon = tk.PhotoImage(file=os.path.join(sys._MEIPASS, "icons\\icon.png"))
     nodes_path = os.path.join(sys._MEIPASS, "nodes.json")
+    new_file_import = os.path.join(sys._MEIPASS, "assets\\model.pyf")
 else:
     sound_path = os.path.join(os.path.dirname(__file__), "sounds")
     temp_dir = os.path.join(os.path.dirname(__file__), "temp")
     help_pages_path = os.path.join(os.path.dirname(__file__), "help_pages.txt")
     icon = tk.PhotoImage(file=os.path.join(os.path.dirname(__file__), "icons\\icon.png"))
     nodes_path = os.path.join(os.path.dirname(__file__), "nodes.json")
+    new_file_import = os.path.join(os.path.dirname(__file__), "assets\\model.pyf")
 root.iconphoto(False, icon)
 root.update_idletasks()
 
@@ -160,10 +163,12 @@ def update_bigger_input():
 
 update_bigger_input()
 
+if_condition_options = ["==", "!=", ">", "<", ">=", "<=", "è", "non è", "è in", "non è in"]
 class Node:
     def __str__(self, mode):
+        global if_condition_options
         if mode == "log":
-            return f"Node(\nx: {self.x}\ny: {self.y}\ntype: {self.type}\nbox: {self.box}\nitems: {self.items}\ntranslate_items: {self.translate_items}\ncircles: {self.circles}\ncircle_types: {self.circle_types}\ncircle_io_types: {self.circle_io_types}\ncircles_is_connected: {self.circles_is_connected}\ncircle_connections: {self.circle_connections}\ncircles_line_connections: {self.circles_line_connections}\nlines_circle_connections: {self.lines_circle_connections}\ninput_circles_number: {self.input_circles_number}\noutput_circles_number: {self.output_circles_number}\n)"
+            return f"Node(\nx: {self.x}\ny: {self.y}\ntype: {self.type}\nbox: {self.box}\nitems: {self.items}\ntranslate_items: {self.translate_items}\ncircles: {self.circles}\ncircle_types: {self.circle_types}\ncircle_io_types: {self.circle_io_types}\ncircles_is_connected: {self.circles_is_connected}\ncircle_connections: {self.circle_connections}\ncircles_line_connections: {self.circles_line_connections}\nlines_circle_connections: {self.lines_circle_connections}\ninput_circles_number: {self.input_circles_number}\noutput_circles_number: {self.output_circles_number}\n{f"condition_operator: {if_condition_options.index(self.if_condition_operator)}" if self.type == "if" or self.type == "while" else ''})"
         elif mode == "export":
             other_nodes = []
             for pair in node_connections_classes:
@@ -187,7 +192,7 @@ class Node:
 
             return f"{{id:{self.id},,x:{int(canvas.coords(self.box)[0])},,y:{int(canvas.coords(self.box)[1])},,type:{self.type},,circle_connections_list:{circle_connections_list},,input_circles_number:{self.input_circles_number},,output_circles_number:{self.output_circles_number},,input_texts:{input_texts}}}"
 
-    def __init__(self, x: int, y: int, type: str):        
+    def __init__(self, x: int, y: int, type: str, import_args: list = []):    
         self.x = x
         self.y = y
         self.id = len(nodes) + 1
@@ -249,56 +254,26 @@ class Node:
                 entry_window = canvas.create_window(x+entry["x"], y+entry["y"], window=nentry)
                 self.items.append(entry_window)
 
-        if "var-buttons" in node_dict.keys():
-            if node_dict["var-buttons"] != []:
-                for button_dict in node_dict["var-buttons"]:
-                    def show_menu(complete_type, text_input):
-                        menu = tk.Menu(canvas.master, tearoff=0)
-                        match complete_type:
-                            case "printvariable":
-                                for variable in declared_variables:
-                                    insert_text = variable
-                                    if text_input.get().startswith("\"") and text_input.get().endswith("\""):
-                                        text_input.insert(0, "f")
-                                        insert_text = f"{{{variable}}}"
-                                    elif text_input.get().startswith("f\"") and text_input.get().endswith("\""):
-                                        insert_text = f"{{{variable}}}"
-                                    menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, insert_text))
-                            case "variable":
-                                for variable in declared_variables:
-                                    menu.add_command(label=variable, command=lambda: text_input.insert(tk.INSERT, variable))
-                            case "function":
-                                for function in declared_functions:
-                                    menu.add_command(label=function, command=lambda: text_input.insert(tk.INSERT, function))
-                            case "list":
-                                for list in declared_lists:
-                                    menu.add_command(label=list, command=lambda: text_input.insert(tk.INSERT, list))
-                                    
-                        menu.post(root.winfo_pointerx(), root.winfo_pointery())
-        
-                    inputs = []
-                    for item in self.translate_items:
-                        if isinstance(item, tk.Entry):
-                            inputs.append(item)
-        
-                    button = tk.Button(canvas.master, text="{x}", font=("Arial", 9), command=lambda complete=button_dict["complete-type"], entry=inputs[button_dict["complete-entry-index"]]: show_menu(complete, entry))
-                    button_window = canvas.create_window(x+button_dict["x"], y+button_dict["y"], window=button)
-                    self.items.append(button_window)
-
-        if type == "if":
-            options = ["==", "!=", ">", "<", ">=", "<=", "è", "non è", "è in", "non è in"]
+        global if_condition_options
+        if type == "if" or type == "while":
             self.if_condition_operator = tk.StringVar(canvas.master)
-            self.if_condition_operator.set(options[0])
+            if len(import_args) > 0:
+                self.if_condition_operator.set(if_condition_options[int(import_args[0])])
+            else:
+                self.if_condition_operator.set(if_condition_options[0])
             def set_condition_operator(option):
                 self.if_condition_operator.set(option)
                 button.config(text=option)
             def show_condition_selection_menu():
                 dropdown_condition_selection = tk.Menu(canvas.master, tearoff=0)
-                for option in options:
+                for option in if_condition_options:
                     dropdown_condition_selection.add_command(label=option, command=lambda option=option: set_condition_operator(option))
                 dropdown_condition_selection.post(root.winfo_pointerx(), root.winfo_pointery())
             button = tk.Button(canvas.master, text=self.if_condition_operator.get(), command=show_condition_selection_menu)
-            entry_window2 = canvas.create_window(x + width/2 - 15, y + height/2 + 10, window=button)
+            if type == "if":
+                entry_window2 = canvas.create_window(x + width/2 - 20, y + height/2 + 13, window=button)
+            else:
+                entry_window2 = canvas.create_window(x + width/2 - 10, y + height/2 + 13, window=button)
             self.items.append(entry_window2)
 
         if type == "listset":
@@ -508,6 +483,7 @@ class Node:
                             other_box_class_circle = other_box_class.lines_circle_connections[self.circles_line_connections[item]]
                             other_box_class.delete_line_from_other_node(other_box_class_circle)
                         self.lines_circle_connections.pop(self.circles_line_connections[item])
+                        self.lines.remove(self.circles_line_connections[item])
                         self.circles_line_connections.pop(item)
                         try:
                             self.circle_connections.pop(item)
@@ -521,6 +497,7 @@ class Node:
     def delete_line_from_other_node(self, connected_circle):
         if self.circles_is_connected[connected_circle]:
             self.circles_is_connected[connected_circle] = False
+            self.lines.remove(self.circles_line_connections[connected_circle])
             self.circles_line_connections.pop(connected_circle)
             self.circle_connections.pop(connected_circle)
 
@@ -552,13 +529,14 @@ class Node:
         
         canvas.after(10, self.update_lines)
 
-    def delete_node(self, event, delete_from_nodes: bool = True):
+    def delete_node(self, event, delete_from_nodes: bool = True, check_conns: bool = True):
         if not event == "import":
             if not event.state & 0x0001:
                 return
-        for pair in node_connections_classes:
-            if pair[0] == self or pair[1] == self:
-                return
+        if check_conns:
+            for pair in node_connections_classes:
+                if pair[0] == self or pair[1] == self:
+                    return
         if self.type == "start" and not event == "import" or self.type == "end" and not event == "import":
             return
         if delete_from_nodes:
@@ -571,6 +549,11 @@ class Node:
             canvas.delete(circle)
         for item in self.items:
             canvas.delete(item)
+        for line in self.lines:
+            try:
+                canvas.delete(line)
+            except:
+                pass
         self.lines = []
         self.circles = []
         self.items = []
@@ -859,14 +842,16 @@ node_to_similar_options_dict = {"print": ["print"],
                                 "forlist": ["forlist", "endforlist"],
                                 "forrange": ["forrange", "endforrange"],
                                 "endforlist": ["forlist", "endforlist"],
-                                "endforrange": ["forrange", "endforrange"]}
+                                "endforrange": ["forrange", "endforrange"],
+                                "while": ["while", "endwhile"],
+                                "endwhile": ["while", "endwhile"]}
 
 similar_nodes_menu = tk.Menu(root, tearoff=0)
 def update_similar_nodes_menu(event):
     global canvas_origin
     similar_nodes_menu.delete(0, tk.END)
-    x = canvas_origin[0] + event.x - root.winfo_x()
-    y = canvas_origin[1] + event.y - root.winfo_y()
+    x = canvas_origin[0] + event.x
+    y = canvas_origin[1] + event.y
     overlapping_items = canvas.find_overlapping(x, y, x, y)
     for item in overlapping_items:
         if canvas.type(item) == "rectangle":
@@ -995,48 +980,71 @@ def help_window():
 
     help_window.mainloop()
 
-def export_workflow():
-    export_file = filedialog.asksaveasfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
+def export_workflow(override_path: str = "", is_save: bool = True):
+    global current_file_label, current_file, open_files
+    if override_path == "":
+        export_file = filedialog.asksaveasfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
+    else:
+        export_file = override_path
     if not os.path.exists(os.path.dirname(export_file)):
         return
-    with open(export_file, "w") as f:
-        node_connections_classes_id_list = []
-        for pair in node_connections_classes:
-            node_connections_classes_id_list.append([pair[0].id, pair[1].id])
-        f.write(f"{{node_connections_classes:{node_connections_classes_id_list}}}\n")
-        circles = []
-        added_circles = []
-        for node in nodes:
-            for circle in node.circles:
-                if circle in node.circle_connections:
-                    if not circle in added_circles:
-                        other_circle = node.circle_connections[circle]
-                        other_node = None
-                        for node2 in nodes:
-                            for circle2 in node2.circles:
-                                if circle2 == other_circle:
-                                    other_node = node2
-                                    break
-                        if other_node is not None:
-                            circles.append([[node.id, node.circle_types[circle]], [other_node.id, other_node.circle_types[other_circle]]])
-                            added_circles.append(circle)
-                            added_circles.append(other_circle)
-        f.write(f"{{circles:{circles}}}\n")
-        f.write("[")
-        for node in nodes:
-            f.write(node.__str__("export").replace(" ", ""))
-            if not node == nodes[-1]:
-                f.write(",,,")
-        f.write("]")
+    current_file_label.config(text=os.path.basename(export_file))
+    current_file = export_file
+    if is_save and not export_file in open_files:
+        open_files.append(export_file)
+    content = ""
 
-def instantiate_app_from_import():
-    global nodes, node_connections, node_connections_classes, nodes_parent_classes, update_nodes_positions
+    node_connections_classes_id_list = []
+    for pair in node_connections_classes:
+        node_connections_classes_id_list.append([pair[0].id, pair[1].id])
+    content += f"{{node_connections_classes:{node_connections_classes_id_list}}}\n"
+    circles = []
+    added_circles = []
+    for node in nodes:
+        for circle in node.circles:
+            if circle in node.circle_connections:
+                if not circle in added_circles:
+                    other_circle = node.circle_connections[circle]
+                    other_node = None
+                    for node2 in nodes:
+                        for circle2 in node2.circles:
+                            if circle2 == other_circle:
+                                other_node = node2
+                                break
+                    if other_node is not None:
+                        circles.append([[node.id, node.circle_types[circle]], [other_node.id, other_node.circle_types[other_circle]]])
+                        added_circles.append(circle)
+                        added_circles.append(other_circle)
+    content += f"{{circles:{circles}}}\n"
+    content += "["
+    for node in nodes:
+        content += node.__str__("export").replace(" ", "")
+        if not node == nodes[-1]:
+            content += ",,,"
+    content += "]"
+    
+    if is_save:
+        with open(export_file, "w") as f:
+            f.write(content)
+        global last_save_content
+        last_save_content = content
+    return content
+
+def instantiate_app_from_import(override_path: str = "", is_switch: bool = False):
+    global nodes, node_connections, node_connections_classes, nodes_parent_classes, update_nodes_positions, current_file, current_file_label, open_files
     update_nodes_positions = False
-    import_file = filedialog.askopenfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
+    if override_path == "":
+        import_file = filedialog.askopenfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
+    else:
+        import_file = override_path
     if not os.path.exists(os.path.dirname(import_file)):
         return
+    current_file_label.config(text=os.path.basename(import_file))
+    current_file = import_file
+    if not is_switch:
+        open_files.append(import_file)
     for node in nodes[:]:
-        node.delete_node("import")
+        node.delete_node("import", check_conns=False)
     contents = ""
     node_connections = []
     nodes_parent_classes = {}
@@ -1063,7 +1071,7 @@ def instantiate_app_from_import():
     node_connections_classes = eval(flow_globals["node_connections_classes"].replace(" ", ""))
     start_node_pos = [0, 0]
     for node in flow:
-        added_node = Node(int(node["x"]), int(node["y"]), node["type"])
+        added_node = Node(int(node["x"]), int(node["y"]), node["type"], [node["condition_operator"]] if node["type"] == "if" or node["type"] == "while" else [])
         added_node.init_from_import(node)
         if node["type"] == "start":
             start_node_pos = [int(node["x"]), int(node["y"])]
@@ -1130,12 +1138,14 @@ def instantiate_app_from_import():
     canvas.yview_moveto(start_node_pos[1])
 
 def resize_root():
+    global current_file_label
     current_width = root.winfo_width()
     current_height = root.winfo_height()
     if current_width != root.width:
         if show_error_bool:
             error_label.place(x=(root.winfo_width() - error_label.winfo_reqwidth()) / 2)
             close_error_button.place(x=(root.winfo_width() - close_error_button.winfo_reqwidth()) / 100 * 95)
+        current_file_label.place(x=root.winfo_width() - current_file_label.winfo_reqwidth() - 10, y=10)
     if current_height != root.height:
         if show_error_bool:
             error_label.place(y=root.winfo_height() - 50)
@@ -1145,28 +1155,159 @@ def resize_root():
     root.after(10, resize_root)
 resize_root()
 
+def add_suggestion(suggestion, entry, part):
+    last_char = entry.get()[entry.index(tk.INSERT) - 1]
+    while last_char in suggestion:
+        entry.delete(f"{tk.INSERT}-1c")
+        last_char = entry.get()[entry.index(tk.INSERT) - 1]
+    entry.insert(tk.INSERT, suggestion)
+    global suggestion_buttons
+    for button in suggestion_buttons:
+        button.destroy()
+    suggestion_buttons = []
+
+suggestion_buttons = []
+def autocomplete():
+    global declared_variables, declared_lists, declared_functions, suggestion_buttons, bigger_input, canvas_origin
+    for button in suggestion_buttons:
+        button.destroy()
+    suggestion_buttons = []
+    complete_entry = root.focus_get()
+    if isinstance(complete_entry, tk.Entry):
+        content = complete_entry.get()
+        x = complete_entry.winfo_rootx() - root.winfo_x()
+        y = complete_entry.winfo_rooty() - root.winfo_y()
+
+        suggestions = []
+        for variable in declared_variables:
+            suggestions.append(f"Variabile: {variable}")
+        for list in declared_lists:
+            suggestions.append(f"Lista: {list}")
+        for function in declared_functions:
+            suggestions.append(f"Funzione: {function}")
+
+        parts = content.split(" ")
+        new_parts = []
+        for part in parts:
+            subparts = part.split(".")
+            for subpart in subparts:
+                new_parts.append(subpart)
+
+        splitted_parts = []
+        for part in new_parts:
+            subparts = part.split("(")
+            for subpart in subparts:
+                splitted_parts.append(subpart)
+
+        i = 0
+        search = complete_entry.index(tk.INSERT) - 1
+        complete_piece = ""
+        for part in splitted_parts:
+            indexes = []
+            for item in range(i, i + len(part)):
+                indexes.append(item)
+            if search in indexes:
+                complete_piece = part
+                break
+            else:
+                i += len(part) + 1
+
+        suggestions_added = 0
+        for suggestion in suggestions:
+            if suggestions_added >= 5:
+                break
+            if suggestion.split(": ")[1].lower().startswith(complete_piece.lower()) and not content == "" and not len(complete_piece) >= len(suggestion.split(": ")[1]):
+                button = tk.Button(root, text=suggestion, command=lambda sugg=suggestion, e=complete_entry, cont=content: add_suggestion(sugg.split(": ")[1], e, cont))
+                suggestion_buttons.append(button)
+                button.place(x=x, y=y - 15 + suggestions_added * (30 if complete_entry != bigger_input else -30))
+                suggestions_added += 1
+
+root.bind("<KeyRelease>", lambda event: autocomplete())
+
+def destroy_autocomplete():
+    global suggestion_buttons
+    for button in suggestion_buttons:
+        button.destroy()
+    suggestion_buttons = []
+
+root.bind("<Button-3>", lambda event: destroy_autocomplete(), "+")
+
 code_lang = "python"
 using_python = tk.BooleanVar(value=True)
 using_java = tk.BooleanVar(value=False)
 
 def change_code_lang(lang):
-    global code_lang
+    global code_lang, execute_menu
     code_lang = lang
 
     match code_lang:
         case "python":
             using_python.set(True)
             using_java.set(False)
+            execute_menu.entryconfig("Traduci in applicazione eseguibile (.exe)", state="normal")
         case "java":
             using_python.set(False)
             using_java.set(True)
+            execute_menu.entryconfig("Traduci in applicazione eseguibile (.exe)", state="disabled")
+
+def new_file():
+    global new_file_import
+    file_path = filedialog.asksaveasfilename(defaultextension=".pyf", filetypes=[("File di salvataggio Python Flow", ".pyf")], initialfile="Nuovo file")
+    if not os.path.exists(os.path.dirname(file_path)):
+        return
+    open(file_path, "w").write(open(new_file_import, "r").read())
+    instantiate_app_from_import(file_path)
+
+def close_current_file():
+    global current_file, open_files, are_unsaved_changes_present
+    close_file_bool = True
+    def confirm_close():
+        window = tk.Toplevel(root)
+        window.title("Conferma chiusura file")
+        window.resizable(False, False)
+        window.geometry(f"300x300+{root.winfo_width() // 2 - 150}+{root.winfo_height() // 2 - 150}")
+
+        title = tk.Label(window, text="Sei sicuro di voler chiudere il file?", anchor="center", font=("Arial", 13, "bold"))
+        title.place(x=window.winfo_width() // 2, y=75)
+
+        subtitle = tk.Label(window, text="Ci sono modifiche non salvate.", anchor="center", font=("Arial", 14))
+        subtitle.place(x=window.winfo_width() // 2, y=150)
+
+        def set_close(value):
+            nonlocal close_file_bool
+            close_file_bool = value
+            window.destroy()
+
+        confirm_button = tk.Button(window, text="Chiudi", command=lambda: set_close(True))
+        confirm_button.place(x=100 - confirm_button.winfo_reqwidth(), y=200)
+
+        cancel_button = tk.Button(window, text="Annulla", command=lambda: set_close(False))
+        cancel_button.place(x=200, y=200)
+
+        window.wait_window(window)
+        return
+
+    if are_unsaved_changes_present:
+        confirm_close()
+    if close_file_bool:
+        if len(open_files) <= 1:
+            quit()
+        open_files.remove(current_file)
+        current_file = open_files[0]
+        instantiate_app_from_import(current_file, True)
 
 root_menu = tk.Menu(root, tearoff=0)
 root.config(menu=root_menu)
 
 file_menu = tk.Menu(root_menu, tearoff=0)
-file_menu.add_command(label="Importa workflow", command=instantiate_app_from_import)
-file_menu.add_command(label="Esporta workflow", command=export_workflow)
+file_menu.add_command(label="Nuovo file", command=new_file)
+file_menu.add_separator()
+file_menu.add_command(label="Apri", command=instantiate_app_from_import)
+file_menu.add_separator()
+file_menu.add_command(label="Salva", command=lambda: export_workflow(current_file))
+file_menu.add_command(label="Salva con nome", command=export_workflow)
+file_menu.add_separator()
+file_menu.add_command(label="Chiudi file", command=close_current_file)
 
 execute_menu = tk.Menu(root_menu, tearoff=0)
 execute_menu.add_command(label="Esegui nel terminale", command=lambda: translate_code("execute"))
@@ -1182,5 +1323,38 @@ help_menu.add_command(label="Aiuto", command=help_window)
 root_menu.add_cascade(label="File", menu=file_menu)
 root_menu.add_cascade(label="Esegui", menu=execute_menu)
 root_menu.add_cascade(label="Aiuto", menu=help_menu)
+
+
+open_files_menu = tk.Menu(root_menu, tearoff=0)
+def update_open_files():
+    global open_files, open_files_menu
+    open_files_menu = tk.Menu(root_menu, tearoff=0)
+    for file in open_files:
+        open_files_menu.add_command(label=os.path.basename(file), command=lambda file=file: instantiate_app_from_import(file, True))
+    root.after(500, update_open_files)
+root.after(1, update_open_files)
+
+current_file_label = tk.Button(root, text="File non salvato", font=("Arial", 10), command=lambda: open_files_menu.post(root.winfo_pointerx(), root.winfo_pointery()))
+current_file_label.place(x=root.winfo_width() - current_file_label.winfo_reqwidth() - 10, y=10)
+current_file = ""
+
+open_files = []
+
+last_save_content = ""
+are_unsaved_changes_present = False
+def check_unsaved_changes():
+    global last_save_content, node_connections_classes, nodes, code_lang, current_file, current_file_label, are_unsaved_changes_present
+    try:
+        if not current_file == "":
+            if export_workflow(current_file, False) != last_save_content:
+                current_file_label.config(text="*" + os.path.basename(current_file))
+                are_unsaved_changes_present = True
+            else:
+                current_file_label.config(text=os.path.basename(current_file))
+                are_unsaved_changes_present = False
+    except:
+        pass
+    root.after(1000, check_unsaved_changes)
+check_unsaved_changes()
 
 root.mainloop()
