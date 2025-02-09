@@ -93,14 +93,6 @@
                 "x": 50,
                 "y": 25
             }
-        ],
-        "var-buttons": [
-            {
-                "x": 50,
-                "y": 80,
-                "complete-entry-index": 0,
-                "complete-type": "printvariable"
-            }
         ]
     },
 
@@ -183,50 +175,36 @@
         "labels": [
             {
                 "x": 75,
-                "y": 35,
+                "y": 30,
                 "text": "Imposta"
             },
             {
                 "x": 75,
-                "y": 55,
+                "y": 50,
                 "text": "variabile"
             },
             {
-                "x": 60,
+                "x": 75,
                 "y": 95,
                 "text": "="
             }
         ],
         "entries": [
             {
-                "x": 60,
+                "x": 75,
                 "y": 75,
                 "type": "name"
             },
             {
-                "x": 60,
+                "x": 75,
                 "y": 115,
                 "type": "value"
-            }
-        ],
-        "var-buttons": [
-            {
-                "x": 120,
-                "y": 75,
-                "complete-entry-index": 0,
-                "complete-type": "variable"
-            },
-            {
-                "x": 120,
-                "y": 115,
-                "complete-entry-index": 1,
-                "complete-type": "variable"
             }
         ]
     },
 
     "if": {
-        "width": 200,
+        "width": 180,
         "height": 150,
         "fill-color": "green",
         "input-circles": [
@@ -240,16 +218,16 @@
         ],
         "output-circles": [
             {
-                "x1": 190,
+                "x1": 170,
                 "y1": 45,
-                "x2": 210,
+                "x2": 190,
                 "y2": 65,
                 "type": "1"
             },
             {
-                "x1": 190,
+                "x1": 170,
                 "y1": 85,
-                "x2": 210,
+                "x2": 190,
                 "y2": 105,
                 "type": "2"
             }
@@ -261,12 +239,12 @@
                 "text": "Se"
             },
             {
-                "x": 170,
+                "x": 150,
                 "y": 55,
                 "text": "vero"
             },
             {
-                "x": 170,
+                "x": 150,
                 "y": 95,
                 "text": "dopo"
             }
@@ -279,20 +257,6 @@
             {
                 "x": 70,
                 "y": 120
-            }
-        ],
-        "var-buttons": [
-            {
-                "x": 135,
-                "y": 55,
-                "complete-entry-index": 0,
-                "complete-type": "variable"
-            },
-            {
-                "x": 135,
-                "y": 120,
-                "complete-entry-index": 1,
-                "complete-type": "variable"
             }
         ]
     },
@@ -537,28 +501,14 @@
         ],
         "entries": [
             {
-                "x": 62.5,
+                "x": 87.5,
                 "y": 70,
                 "type": "name"
             },
             {
-                "x": 62.5,
+                "x": 87.5,
                 "y": 120,
                 "type": "args"
-            }
-        ],
-        "var-buttons": [
-            {
-                "x": 142.5,
-                "y": 70,
-                "complete-entry-index": 0,
-                "complete-type": "function"
-            },
-            {
-                "x": 142.5,
-                "y": 120,
-                "complete-entry-index": 1,
-                "complete-type": "variable"
             }
         ]
     },
@@ -610,39 +560,19 @@
         ],
         "entries": [
             {
-                "x": 62.5,
+                "x": 87.5,
                 "y": 65,
                 "type": "name"
             },
             {
-                "x": 62.5,
+                "x": 87.5,
                 "y": 115,
                 "type": "args"
             },
             {
-                "x": 62.5,
+                "x": 87.5,
                 "y": 170,
                 "type": "variable"
-            }
-        ],
-        "var-buttons": [
-            {
-                "x": 142.5,
-                "y": 65,
-                "complete-entry-index": 0,
-                "complete-type": "function"
-            },
-            {
-                "x": 142.5,
-                "y": 115,
-                "complete-entry-index": 1,
-                "complete-type": "variable"
-            },
-            {
-                "x": 142.5,
-                "y": 170,
-                "complete-entry-index": 2,
-                "complete-type": "variable"
             }
         ]
     },
@@ -726,17 +656,9 @@
                 "type": "item"
             },
             {
-                "x": 65,
+                "x": 75,
                 "y": 97.5,
                 "type": "list"
-            }
-        ],
-        "var-buttons": [
-            {
-                "x": 130,
-                "y": 97.5,
-                "complete-entry-index": 1,
-                "complete-type": "list"
             }
         ]
     },
@@ -794,14 +716,6 @@
                 "x": 82.5,
                 "y": 62.5
             }
-        ],
-        "var-buttons": [
-            {
-                "x": 87.5,
-                "y": 97.5,
-                "complete-entry-index": 0,
-                "complete-type": "variable"
-            }
         ]
     },
 
@@ -838,14 +752,6 @@
             {
                 "x": 62.5,
                 "y": 62.5
-            }
-        ],
-        "var-buttons": [
-            {
-                "x": 62.5,
-                "y": 97.5,
-                "complete-entry-index": 0,
-                "complete-type": "variable"
             }
         ]
     },
@@ -948,14 +854,6 @@
                 "y": 110,
                 "type": "list"
             }
-        ],
-        "var-buttons": [
-            {
-                "x": 130,
-                "y": 130,
-                "complete-entry-index": 0,
-                "complete-type": "list"
-            }
         ]
     },
 
@@ -1033,8 +931,7 @@
                 "y": 130,
                 "type": "rangeend"
             }
-        ],
-        "var-buttons": []
+        ]
     },
 
     "endforlist": {
@@ -1064,8 +961,7 @@
                 "font-size": 10
             }
         ],
-        "entries": [],
-        "var-buttons": []
+        "entries": []
     },
 
     "endforrange": {
@@ -1095,8 +991,7 @@
                 "font-size": 10
             }
         ],
-        "entries": [],
-        "var-buttons": []
+        "entries": []
     },
 
     "while": {
@@ -1149,12 +1044,16 @@
         ],
         "entries": [
             {
-                "x": 87.5,
-                "y": 75,
-                "width": 15
+                "x": 77.5,
+                "y": 60,
+                "type": "first"
+            },
+            {
+                "x": 77.5,
+                "y": 115,
+                "type": "second"
             }
-        ],
-        "var-buttons": []
+        ]
     },
 
     "endwhile": {
@@ -1183,7 +1082,6 @@
                 "text": "mentre"
             }
         ],
-        "entries": [],
-        "var-buttons": []
+        "entries": []
     }
 }
