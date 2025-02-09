@@ -694,9 +694,10 @@ def translate_code(option: str):
             else:
                 subprocess.Popen(f"java {temp_dir}\\Main.java")
         case "source":
-            if code_lang != "python":
-                return
-            save_path = filedialog.asksaveasfilename(filetypes=[("File di codice sorgente Python", ".py")], defaultextension=".py")
+            if code_lang == "python":
+                save_path = filedialog.asksaveasfilename(filetypes=[("File di codice sorgente Python", ".py")], defaultextension=".py")
+            else:
+                save_path = filedialog.asksaveasfilename(filetypes=[("File di codice sorgente Java", ".java")], defaultextension=".java")
             with open(save_path, "w") as file:
                 file.write(code)
         case "app":
