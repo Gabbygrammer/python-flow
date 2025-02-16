@@ -6,11 +6,15 @@ import subprocess
 import sys
 import time
 import json
+import webbrowser
+import requests
 
 from translator import flow_to_code
 from translation import TranslationException
 
 os.system('cls' if os.name == 'nt' else 'clear')
+
+VERSION = "v1.3.2"
 
 root = tk.Tk()
 root.geometry("800x600")
@@ -42,6 +46,14 @@ else:
     icon = tk.PhotoImage(file=os.path.join(os.path.dirname(__file__), "icons\\icon.png"))
     nodes_path = os.path.join(os.path.dirname(__file__), "nodes.json")
     new_file_import = os.path.join(os.path.dirname(__file__), "assets\\model.pyf")
+preferences_file = os.path.join(os.environ["LOCALAPPDATA"], "Python Flow\\preferences.json")
+
+if not os.path.exists(preferences_file):
+    os.mkdir(os.path.dirname(preferences_file))
+    open(preferences_file, "w").write(json.dumps({"theme": "light"}))
+
+user_preferences = json.load(open(preferences_file, "r"))
+
 root.iconphoto(False, icon)
 root.update_idletasks()
 
@@ -192,7 +204,8 @@ class Node:
 
             return f"{{id:{self.id},,x:{int(canvas.coords(self.box)[0])},,y:{int(canvas.coords(self.box)[1])},,type:{self.type},,circle_connections_list:{circle_connections_list},,input_circles_number:{self.input_circles_number},,output_circles_number:{self.output_circles_number},,input_texts:{input_texts}{f",,condition_operator: {if_condition_options.index(self.if_condition_operator.get())}" if self.type == "if" or self.type == "while" else ''}}}"
 
-    def __init__(self, x: int, y: int, type: str, import_args: list = []):    
+    def __init__(self, x: int, y: int, type: str, import_args: list = []):
+        global using_dark_mode
         self.x = x
         self.y = y
         self.id = len(nodes) + 1
@@ -214,7 +227,15 @@ class Node:
         width = node_dict["width"]
         height = node_dict["height"]
 
-        self.box = canvas.create_rectangle(x, y, x+width, y+height, fill=node_dict["fill-color"])
+        fill_color = node_dict["fill-color"]
+
+        try:
+            if using_dark_mode.get():
+                fill_color = color_light_to_dark[fill_color]
+        except:
+            pass
+
+        self.box = canvas.create_rectangle(x, y, x+width, y+height, fill=fill_color)
 
         for circle in node_dict["input-circles"]:
             icircle = canvas.create_oval(x+circle["x1"], y+circle["y1"], x+circle["x2"], y+circle["y2"], fill="red")
@@ -261,15 +282,18 @@ class Node:
                 self.if_condition_operator.set(if_condition_options[int(import_args[0])])
             else:
                 self.if_condition_operator.set(if_condition_options[0])
+
             def set_condition_operator(option):
                 self.if_condition_operator.set(option)
                 button.config(text=option)
-            def show_condition_selection_menu():
-                dropdown_condition_selection = tk.Menu(canvas.master, tearoff=0)
-                for option in if_condition_options:
-                    dropdown_condition_selection.add_command(label=option, command=lambda option=option: set_condition_operator(option))
-                dropdown_condition_selection.post(root.winfo_pointerx(), root.winfo_pointery())
-            button = tk.Button(canvas.master, text=self.if_condition_operator.get(), command=show_condition_selection_menu)
+
+            dropdown_condition_selection = tk.Menu(canvas.master, tearoff=0)
+            self.condition_menu = dropdown_condition_selection
+
+            for option in if_condition_options:
+                dropdown_condition_selection.add_command(label=option, command=lambda option=option: set_condition_operator(option))
+
+            button = tk.Button(canvas.master, text=self.if_condition_operator.get(), command=lambda: dropdown_condition_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
             if type == "if":
                 entry_window2 = canvas.create_window(x + width/2 - 20, y + height/2 + 13, window=button)
             else:
@@ -379,6 +403,7 @@ class Node:
         self.y = event.y
 
     def start_drag_line(self, event):
+        global using_light_mode
         x = event.x + canvas.canvasx(0)
         y = event.y + canvas.canvasy(0)
         overlapping_items = canvas.find_overlapping(x, y, x, y)
@@ -388,7 +413,7 @@ class Node:
             if canvas.type(item) == "oval":
                 if not self.circles_is_connected[item]:
                     self.start_drag_circle = item
-                    line = canvas.create_line(canvas.coords(item)[0] + 10, canvas.coords(item)[1] + 10, x, y, width=5, tags="line")
+                    line = canvas.create_line(canvas.coords(item)[0] + 10, canvas.coords(item)[1] + 10, x, y, width=5, tags="line", fill="black" if using_light_mode.get() else "lightgray")
                     self.start_drag_line_item = line
                     self.circles_line_connections[item] = line
                     self.lines_circle_connections[line] = item
@@ -1299,8 +1324,72 @@ def close_current_file():
         current_file = open_files[0]
         instantiate_app_from_import(current_file, True)
 
+
+current_color_mode = user_preferences["theme"]
+color_light_to_dark = {
+    "red": "#D20000",
+    "lightgreen": "#00BA0C",
+    "orange": "#E17800",
+    "yellow": "#BFC423",
+    "green": "#0B9E01",
+    "blue": "#000DC1",
+    "purple": "#6B02BC",
+    "pink": "#C41CB9",
+    "cyan": "#07C7C1"
+}
+using_light_mode = tk.BooleanVar(value=True)
+using_dark_mode = tk.BooleanVar(value=False)
+def change_color_mode(mode: str):
+    global current_color_mode, user_preferences
+    current_color_mode = mode
+    user_preferences["theme"] = mode
+    json.dump(user_preferences, open(preferences_file, "w"))
+
+    global root_menu
+    root_ui_items = [start_node_pos_label, end_node_pos_label, current_file_label, node_selection_button]
+    menus = [file_menu, execute_menu, settings_menu, help_menu, open_files_menu, similar_nodes_menu, dropdown_node_selection]
+    if mode == "light":
+        using_light_mode.set(True)
+        using_dark_mode.set(False)
+        canvas.config(background="gray")
+        for node in nodes:
+            light_color = ""
+            for key in color_light_to_dark:
+                if color_light_to_dark[key] == canvas.itemcget(node.box, "fill"):
+                    light_color = key
+            canvas.itemconfig(node.box, fill=light_color)
+
+        for node in nodes:
+            if node.type == "if" or node.type == "while":
+                node.condition_menu.config(fg="black", bg="#F0F0F0")
+        for item in root_ui_items:
+            item.config(fg="black", bg="#F0F0F0")
+        for menu in menus:
+            menu.config(fg="black", bg="#F0F0F0")
+            for item in menu.winfo_children():
+                item.config(fg="black", bg="#F0F0F0")
+    else:
+        using_light_mode.set(False)
+        using_dark_mode.set(True)
+        canvas.config(background="#373737")
+        for node in nodes:
+            canvas.itemconfig(node.box, fill=color_light_to_dark[canvas.itemcget(node.box, "fill")])
+            if node.type == "if" or node.type == "while":
+                node.condition_menu.config(fg="#D2D2D2", bg="#555555")
+
+        for item in root_ui_items:
+            item.config(fg="#D2D2D2", bg="#555555")
+        for menu in menus:
+            menu.config(fg="#D2D2D2", bg="#555555")
+            for item in menu.winfo_children():
+                item.config(fg="#D2D2D2", bg="#555555")
+
+if user_preferences["theme"] == "dark":
+    using_dark_mode.set(True)
+    using_light_mode.set(False)
+    root.after(1, lambda: change_color_mode("dark"))
+
 root_menu = tk.Menu(root, tearoff=0)
-root.config(menu=root_menu)
 
 file_menu = tk.Menu(root_menu, tearoff=0)
 file_menu.add_command(label="Nuovo file", command=new_file)
@@ -1320,13 +1409,19 @@ execute_menu.add_separator()
 execute_menu.add_checkbutton(label="Linguaggio: Python", command=lambda: change_code_lang("python"), onvalue=True, offvalue=False, variable=using_python)
 execute_menu.add_checkbutton(label="Linguaggio: Java", command=lambda: change_code_lang("java"), onvalue=True, offvalue=False, variable=using_java)
 
+settings_menu = tk.Menu(root_menu, tearoff=0)
+settings_menu.add_checkbutton(label="Tema chiaro", command=lambda: change_color_mode("light"), onvalue=True, offvalue=False, variable=using_light_mode)
+settings_menu.add_checkbutton(label="Tema scuro", command=lambda: change_color_mode("dark"), onvalue=True, offvalue=False, variable=using_dark_mode)
+
 help_menu = tk.Menu(root_menu, tearoff=0)
 help_menu.add_command(label="Aiuto", command=help_window)
 
 root_menu.add_cascade(label="File", menu=file_menu)
 root_menu.add_cascade(label="Esegui", menu=execute_menu)
+root_menu.add_cascade(label="Impostazioni", menu=settings_menu)
 root_menu.add_cascade(label="Aiuto", menu=help_menu)
 
+root.config(menu=root_menu, bg="black")
 
 open_files_menu = tk.Menu(root_menu, tearoff=0)
 def update_open_files():
@@ -1359,5 +1454,25 @@ def check_unsaved_changes():
         pass
     root.after(1000, check_unsaved_changes)
 check_unsaved_changes()
+
+def new_version_window():
+    window = tk.Toplevel(root)
+    window.title("Nuova versione disponibile")
+    window.geometry("300x100")
+    window.resizable(False, False)
+
+    label = tk.Label(window, text="Nuova versione disponibile", font=("Arial", 12))
+    label.place(x=300 // 2 - label.winfo_reqwidth() // 2, y=10)
+
+    def update():
+        webbrowser.open("https://github.com/Gabbygrammer/python-flow/releases/latest")
+        root.destroy()
+        quit()
+
+    button = tk.Button(window, text="Aggiorna", command=update)
+    button.place(x=300 // 2 - button.winfo_reqwidth() // 2, y=50)
+
+if requests.get("https://api.github.com/repos/Gabbygrammer/python-flow/releases/latest").json()["tag_name"] != VERSION:
+    new_version_window()
 
 root.mainloop()
