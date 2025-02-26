@@ -743,14 +743,19 @@ def translate_code(option: str):
             os.system(f"move dist\\{os.path.basename(save_path)} {os.path.dirname(save_path)}\\{os.path.basename(save_path)}")
             os.system("rmdir /s /q dist")
             os.system("del /s /q temp.spec")
-    return
 
-node_options_submenus = ["Generali", "Variabili", "Condizionali", "Funzioni", "Loop"]
+    if option != "":
+        os.system("rmdir /s /q " + temp_dir)
+        os.mkdir(temp_dir)
+    return code
+
+node_options_submenus = ["Generali", "Variabili", "Condizionali", "Funzioni", "Loop", "Importazioni"]
 node_options_submenus_dict = {"Generali": ["Stampa"],
                               "Variabili": ["Dichiara variabile", "Imposta variabile", "Dichiara lista", "Modifica lista"],
                               "Condizionali": ["Se", "Altrimenti", "Fine se", "Esamina variabile", "Caso variabile", "Fine esamina variabile"],
                               "Funzioni": ["Dichiara funzione", "Chiama funzione (senza ritorno)", "Chiama funzione (variabile)", "Fine funzione", "Ritorna"],
-                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per (lista)", "Fine per (intervallo)", "Mentre", "Fine mentre"]}
+                              "Loop": ["Per ogni oggetto in lista", "Per ogni numero in intervallo", "Fine per (lista)", "Fine per (intervallo)", "Mentre", "Fine mentre"],
+                              "Importazioni": ["Importa"]}
 node_options_dict = {"Stampa": "print",
                      "Dichiara variabile": "variabledecl",
                      "Imposta variabile": "variableset",
@@ -772,7 +777,8 @@ node_options_dict = {"Stampa": "print",
                      "Fine per (lista)": "endforlist",
                      "Fine per (intervallo)": "endforrange",
                      "Mentre": "while",
-                     "Fine mentre": "endwhile"}
+                     "Fine mentre": "endwhile",
+                     "Importa": "import"}
 selected_node = tk.StringVar()
 def set_selected_node(option):
     selected_node.set(option)
@@ -784,7 +790,12 @@ for submenu in node_options_submenus:
         submenu_inst.add_command(label=option, command=lambda option=option: set_selected_node(option))
     dropdown_node_selection.add_cascade(label=submenu, menu=submenu_inst)
 
-node_selection_button = tk.Button(root, text="Aggiungi nodo", command=lambda: dropdown_node_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
+def dropdown_node_selection_popup():
+    global dropdown_node_selection, handle_import_node_menu
+    handle_import_node_menu()
+    dropdown_node_selection.post(root.winfo_pointerx(), root.winfo_pointery())
+
+node_selection_button = tk.Button(root, text="Aggiungi nodo", command=dropdown_node_selection_popup)
 node_selection_button.place(x=350, y=10)
 
 dropdown_node_selection.i = 0
@@ -846,10 +857,10 @@ def add_node_dropdown():
 
 canvas.bind('n', lambda event: dropdown_node_selection.post(root.winfo_pointerx(), root.winfo_pointery()))
 
-def remove_focus(event):
+def remove_focus():
     canvas.focus_set()
 
-canvas.bind('<Button-1>', remove_focus)
+canvas.bind('<Button-1>', lambda event: remove_focus())
 
 node_to_similar_options_dict = {"print": ["print"],
                                 "variabledecl": ["variabledecl", "variableset"],
@@ -872,7 +883,8 @@ node_to_similar_options_dict = {"print": ["print"],
                                 "endforlist": ["forlist", "endforlist"],
                                 "endforrange": ["forrange", "endforrange"],
                                 "while": ["while", "endwhile"],
-                                "endwhile": ["while", "endwhile"]}
+                                "endwhile": ["while", "endwhile"],
+                                "import": ["import"]}
 
 similar_nodes_menu = tk.Menu(root, tearoff=0)
 def update_similar_nodes_menu(event):
@@ -913,6 +925,18 @@ def navigate_similar_nodes_selection_menu(event):
 similar_nodes_menu.bind("<Down>", navigate_similar_nodes_selection_menu)
 similar_nodes_menu.bind("<Up>", navigate_similar_nodes_selection_menu)
 similar_nodes_menu.bind("<Return>", navigate_similar_nodes_selection_menu)
+
+def handle_import_node_menu():
+    global project_dir, dropdown_node_selection, execute_menu, code_lang
+    if project_dir is None:
+        dropdown_node_selection.entryconfig("Importazioni", state="disabled")
+        execute_menu.entryconfig("Esegui progetto", state="disabled")
+    elif code_lang == "java":
+        dropdown_node_selection.entryconfig("Importazioni", state="disabled")
+        execute_menu.entryconfig("Esegui progetto", state="disabled")
+    else:
+        dropdown_node_selection.entryconfig("Importazioni", state="normal")
+        execute_menu.entryconfig("Esegui progetto", state="normal")
 
 current_page = 0
 def help_window():
@@ -1010,6 +1034,7 @@ def help_window():
 
 def export_workflow(override_path: str = "", is_save: bool = True):
     global current_file_label, current_file, open_files
+    if override_path == None: return
     if override_path == "":
         export_file = filedialog.asksaveasfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
     else:
@@ -1059,14 +1084,17 @@ def export_workflow(override_path: str = "", is_save: bool = True):
     return content
 
 def instantiate_app_from_import(override_path: str = "", is_switch: bool = False):
-    global nodes, node_connections, node_connections_classes, nodes_parent_classes, update_nodes_positions, current_file, current_file_label, open_files
+    global nodes, node_connections, node_connections_classes, nodes_parent_classes, update_nodes_positions, current_file, current_file_label, open_files, project_dir
     update_nodes_positions = False
     if override_path == "":
-        import_file = filedialog.askopenfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf")
+        import_file = filedialog.askopenfilename(filetypes=[("File di salvataggio Python Flow", ".pyf")], defaultextension=".pyf", initialdir=project_dir)
     else:
         import_file = override_path
     if not os.path.exists(os.path.dirname(import_file)):
         return
+    if project_dir is not None:
+        if not project_dir in import_file:
+            return
     current_file_label.config(text=os.path.basename(import_file))
     current_file = import_file
     if not is_switch:
@@ -1166,7 +1194,7 @@ def instantiate_app_from_import(override_path: str = "", is_switch: bool = False
     canvas.yview_moveto(start_node_pos[1])
 
 def resize_root():
-    global current_file_label
+    global current_file_label, project_dir_label, project_dir
     current_width = root.winfo_width()
     current_height = root.winfo_height()
     if current_width != root.width:
@@ -1174,6 +1202,8 @@ def resize_root():
             error_label.place(x=(root.winfo_width() - error_label.winfo_reqwidth()) / 2)
             close_error_button.place(x=(root.winfo_width() - close_error_button.winfo_reqwidth()) / 100 * 95)
         current_file_label.place(x=root.winfo_width() - current_file_label.winfo_reqwidth() - 10, y=10)
+        if project_dir is not None:
+            project_dir_label.place(x=root.winfo_width() - project_dir_label.winfo_reqwidth() - 10, y=40)
     if current_height != root.height:
         if show_error_bool:
             error_label.place(y=root.winfo_height() - 50)
@@ -1279,10 +1309,13 @@ def change_code_lang(lang):
             execute_menu.entryconfig("Traduci in applicazione eseguibile (.exe)", state="disabled")
 
 def new_file():
-    global new_file_import
-    file_path = filedialog.asksaveasfilename(defaultextension=".pyf", filetypes=[("File di salvataggio Python Flow", ".pyf")], initialfile="Nuovo file")
+    global new_file_import, project_dir
+    file_path = filedialog.asksaveasfilename(defaultextension=".pyf", filetypes=[("File di salvataggio Python Flow", ".pyf")], initialfile="Nuovo file", initialdir=project_dir)
     if not os.path.exists(os.path.dirname(file_path)):
         return
+    if project_dir is not None:
+        if not project_dir in file_path:
+            return
     open(file_path, "w").write(open(new_file_import, "r").read())
     instantiate_app_from_import(file_path)
 
@@ -1324,6 +1357,65 @@ def close_current_file():
         current_file = open_files[0]
         instantiate_app_from_import(current_file, True)
 
+project_dir = None
+project_dir_label = tk.Label(root)
+def new_project():
+    global project_dir, open_files, current_file, current_file_label
+    base_dir = filedialog.askdirectory(title="Seleziona la cartella base del progetto", initialdir=f"C:\\Users\\{os.getlogin()}")
+    if not os.path.exists(base_dir):
+        return
+    project_dir = base_dir
+    open_files = []
+    current_file = None
+    current_file_label.config(text="File non salvato")
+    project_dir_label.config(text=f"({project_dir})")
+    project_dir_label.place(x=root.winfo_width() - project_dir_label.winfo_reqwidth() - 10, y=40)
+
+def open_project():
+    global project_dir, open_files, current_file, current_file_label
+    base_dir = filedialog.askdirectory(title="Seleziona la cartella base del progetto", initialdir=f"C:\\Users\\{os.getlogin()}")
+    if not os.path.exists(base_dir):
+        return
+    open_files = []
+    current_file = None
+    for r, _, files in os.walk(base_dir):
+        for file in files:
+            if not file.endswith(".pyf"):
+                return
+            if current_file is None:
+                current_file = os.path.join(r, file)
+    project_dir = base_dir
+    current_file_label.config(text=os.path.basename(current_file) if current_file is not None else "File non salvato")
+    project_dir_label.config(text=f"({project_dir})")
+    project_dir_label.place(x=root.winfo_width() - project_dir_label.winfo_reqwidth() - 10, y=40)
+    if current_file is not None:
+        instantiate_app_from_import(current_file)
+
+def close_project():
+    global project_dir, open_files, current_file, current_file_label, project_dir_label
+    project_dir = None
+    open_files = []
+    current_file = None
+    current_file_label.config(text="File non salvato")
+    project_dir_label.config(text="")
+    project_dir_label.place_forget()
+
+def execute_project():
+    global current_file
+    execution_file = current_file
+    for root, _, files in os.walk(project_dir):
+        for file in files:
+            if file.endswith(".pyf"):
+                instantiate_app_from_import(os.path.join(root, file), True)
+                code = translate_code("")
+                if not os.path.exists(f"{temp_dir}\\{root.removeprefix(project_dir)}"):
+                    os.mkdir(f"{temp_dir}\\{root.removeprefix(project_dir)}")
+                with open(f"{temp_dir}\\{root.removeprefix(project_dir)}\\{file.removesuffix('.pyf')}.py", "w") as f:
+                    f.write(code)
+
+    main_file = f"{temp_dir}\\{execution_file.removeprefix(project_dir).removesuffix(".pyf")}.py"
+    subprocess.Popen(f"python {main_file}")
+
 
 current_color_mode = user_preferences["theme"]
 color_light_to_dark = {
@@ -1346,7 +1438,7 @@ def change_color_mode(mode: str):
     json.dump(user_preferences, open(preferences_file, "w"))
 
     global root_menu
-    root_ui_items = [start_node_pos_label, end_node_pos_label, current_file_label, node_selection_button]
+    root_ui_items = [start_node_pos_label, end_node_pos_label, current_file_label, node_selection_button, project_dir_label]
     menus = [file_menu, execute_menu, settings_menu, help_menu, open_files_menu, similar_nodes_menu, dropdown_node_selection]
     if mode == "light":
         using_light_mode.set(True)
@@ -1393,18 +1485,23 @@ root_menu = tk.Menu(root, tearoff=0)
 
 file_menu = tk.Menu(root_menu, tearoff=0)
 file_menu.add_command(label="Nuovo file", command=new_file)
+file_menu.add_command(label="Nuovo progetto", command=new_project)
 file_menu.add_separator()
 file_menu.add_command(label="Apri", command=instantiate_app_from_import)
+file_menu.add_command(label="Apri progetto", command=open_project)
 file_menu.add_separator()
 file_menu.add_command(label="Salva", command=lambda: export_workflow(current_file))
 file_menu.add_command(label="Salva con nome", command=export_workflow)
 file_menu.add_separator()
 file_menu.add_command(label="Chiudi file", command=close_current_file)
+file_menu.add_command(label="Chiudi progetto", command=close_project)
 
-execute_menu = tk.Menu(root_menu, tearoff=0)
+execute_menu = tk.Menu(root_menu, tearoff=0, postcommand=handle_import_node_menu)
 execute_menu.add_command(label="Esegui nel terminale", command=lambda: translate_code("execute"))
 execute_menu.add_command(label="Traduci in codice sorgente", command=lambda: translate_code("source"))
 execute_menu.add_command(label="Traduci in applicazione eseguibile (.exe)", command=lambda: translate_code("app"))
+execute_menu.add_separator()
+execute_menu.add_command(label="Esegui progetto", command=execute_project)
 execute_menu.add_separator()
 execute_menu.add_checkbutton(label="Linguaggio: Python", command=lambda: change_code_lang("python"), onvalue=True, offvalue=False, variable=using_python)
 execute_menu.add_checkbutton(label="Linguaggio: Java", command=lambda: change_code_lang("java"), onvalue=True, offvalue=False, variable=using_java)
