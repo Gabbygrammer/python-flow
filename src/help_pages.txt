@@ -166,3 +166,9 @@ Deve essere chiuso dal suo rispettivo nodo finale (vedi seguente).
 
 Categoria "Loop": il nodo Fine mentre
 Questo nodo determina la fine di un nodo "Mentre".
+
+Categoria "Importazioni": il nodo Importa
+Questo nodo permette di importare funzioni in un file da un altro file in un progetto, a patto che essi siano nella stessa cartella.{n}
+Per esempio, se nel file "test.pyf" mettiamo una funzione "a" che stampa "abc" e nel file "test2.pyf" mettiamo un nodo Importa scrivendo il nome del file "test2" (senza .pyf), dal secondo file potrai chiamare "a".{n}
+Per usufruire dell'importazione, bisogna eseguire premendo su "Esegui progetto", mentre il file aperto correntemente deve essere quello principale (con l'importazione).{n}
+Al momento, funziona soltanto in Python.
