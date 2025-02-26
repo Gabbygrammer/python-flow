@@ -14,7 +14,7 @@ from translation import TranslationException
 
 os.system('cls' if os.name == 'nt' else 'clear')
 
-VERSION = "v1.3.2"
+VERSION = "v1.4.0alpha"
 
 root = tk.Tk()
 root.geometry("800x600")
