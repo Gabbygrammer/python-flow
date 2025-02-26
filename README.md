@@ -33,6 +33,10 @@ Codice sorgente tradotto in Python
 
 Codice sorgente tradotto in Java
 
+![Screenshot 2025-02-26 165944](https://github.com/user-attachments/assets/3387b328-3c98-4432-91db-430b1fdc90d7)
+
+Tema scuro
+
 
 ## Comandi
 
