@@ -1083,5 +1083,42 @@
             }
         ],
         "entries": []
+    },
+
+    "import": {
+        "width": 125,
+        "height": 125,
+        "fill-color": "pink",
+        "input-circles": [
+            {
+                "x1": -10,
+                "y1": 52.5,
+                "x2": 10,
+                "y2": 72.5,
+                "type": "input"
+            }
+        ],
+        "output-circles": [
+            {
+                "x1": 115,
+                "y1": 52.5,
+                "x2": 135,
+                "y2": 72.5,
+                "type": "output"
+            }
+        ],
+        "labels": [
+            {
+                "x": 62.5,
+                "y": 30,
+                "text": "Importa"
+            }
+        ],
+        "entries": [
+            {
+                "x": 62.5,
+                "y": 62.5
+            }
+        ]
     }
 }
