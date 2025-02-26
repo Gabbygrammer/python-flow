@@ -184,7 +184,8 @@ syntax = {
         "case": "case $0:",
         "forlist": "for $0 in $1:",
         "forrange": "for $0 in range($1, $2):",
-        "while": "while $0 $1 $2:"
+        "while": "while $0 $1 $2:",
+        "import": "import $0"
     },
 
     "java": {
@@ -210,7 +211,8 @@ syntax = {
         "case": "case $0:",
         "forlist": "for (type $0 : $1) {",
         "forrange": "for (int $0 = $1; i < $2; i++) {",
-        "while": "while ($0 $1 $2) {"
+        "while": "while ($0 $1 $2) {",
+        "import": "import $0"
     }
 }
 
@@ -700,6 +702,9 @@ def translate_to_code(language, add_final_block: bool, skip_print: bool):
                 indentation_level -= 1
                 if language == "java":
                     line_to_add = f"{"    " * indentation_level}}}\n"
+
+            case "import":
+                line_to_add = f"{"    " * indentation_level}{lang_syntax["import"].replace("$0", node.translate_items[0].get())}\n"
 
         last_node = node
 
